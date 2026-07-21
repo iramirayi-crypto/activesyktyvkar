@@ -1,5 +1,5 @@
 from django.db import models
-
+from django.contrib.auth.models import User
 
 class Category(models.Model):
     name = models.CharField("Название", max_length=100, unique=True)
@@ -31,6 +31,14 @@ class Initiative(models.Model):
         on_delete=models.CASCADE,
         verbose_name="Категория"
     )
+
+    author = models.ForeignKey(
+    User,
+    on_delete=models.CASCADE,
+    verbose_name="Автор",
+    null=True,
+    blank=True,
+)
 
     status = models.CharField(
         "Статус",
