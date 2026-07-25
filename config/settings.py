@@ -40,8 +40,8 @@ INSTALLED_APPS = [
 
     'accounts',
     'initiatives',
-    'comments',
-    'attachments',
+    'comments.apps.CommentsConfig',
+    'attachments.apps.AttachmentsConfig',
 ]
 
 MIDDLEWARE = [
