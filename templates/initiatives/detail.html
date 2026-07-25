@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}
+{{ initiative.title }}
+{% endblock %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+    <h2>{{ initiative.title }}</h2>
+
+    <p class="text-muted">
+        {{ initiative.created_at|date:"d.m.Y" }}
+    </p>
+
+<div class="mb-3">
+    <span class="badge bg-success">
+        {{ initiative.get_status_display }}
+    </span>
+</div>
+
+<p>
+    <strong>Категория:</strong>
+    {{ initiative.category }}
+</p>
+
+<p>
+    <strong>Автор:</strong>
+    {{ initiative.author }}
+</p>
+
+    {% if attachments %}
+    <div class="row mb-4">
+        {% for attachment in attachments %}
+            <div class="col-12 mb-3">
+                <img src="{{ attachment.file.url }}"
+                     class="img-fluid rounded shadow w-100"
+                     style="max-height:550px; object-fit:cover;"
+                     alt="{{ initiative.title }}">
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+<div class="card mt-4">
+
+    <div class="card-body">
+
+        <h4>Описание</h4>
+
+        <p class="mb-0">
+            {{ initiative.description }}
+        </p>
+
+    </div>
+
+</div>
+
+<div class="alert alert-success mt-4">
+    👍 Поддержали инициативу:
+    <strong>{{ votes_count }}</strong>
+</div>
+
+{% if user.is_authenticated %}
+
+<form method="post"
+      action="{% url 'vote_initiative' initiative.id %}">
+
+    {% csrf_token %}
+
+    <button type="submit"
+            class="btn btn-success">
+        👍 Поддержать инициативу
+    </button>
+
+</form>
+
+{% else %}
+
+<div class="alert alert-warning">
+
+    Чтобы поддержать инициативу,
+    необходимо войти в систему.
+
+</div>
+
+{% endif %}
+
+<a href="{% url 'initiative_list' %}"
+   class="btn btn-secondary mt-3">
+    ← Назад
+</a>
+
+</div>
+
+{% endblock %}

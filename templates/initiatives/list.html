@@ -24,7 +24,7 @@
                          alt="{{ initiative.title }}"
                          style="height:250px; object-fit:cover;">
                     {% endif %}
-                    
+
                     <div class="card-body">
 
                         <h4 class="card-title">
@@ -49,6 +49,11 @@
                             <strong>Статус:</strong>
                             {{ initiative.get_status_display }}
                         </p>
+
+                        <a href="{% url 'initiative_detail' initiative.id %}"
+                            class="btn btn-primary mt-2">
+                            Подробнее
+                        </a>
 
                     </div>
 
