@@ -59,3 +59,30 @@ class Initiative(models.Model):
 
     def __str__(self):
         return self.title
+
+class Vote(models.Model):
+    initiative = models.ForeignKey(
+        Initiative,
+        on_delete=models.CASCADE,
+        verbose_name="Инициатива"
+    )
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        verbose_name="Пользователь"
+    )
+
+    created_at = models.DateTimeField(
+        "Дата голосования",
+        auto_now_add=True
+    )
+
+    class Meta:
+        verbose_name = "Голос"
+        verbose_name_plural = "Голоса"
+        ordering = ["-created_at"]
+        unique_together = ("initiative", "user")
+
+    def __str__(self):
+        return f"{self.user.username} → {self.initiative.title}"     
