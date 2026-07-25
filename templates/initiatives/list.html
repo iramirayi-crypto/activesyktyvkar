@@ -1,26 +1,75 @@
-{% extends 'base.html' %}
-
-{% block title %}
-Инициативы
-{% endblock %}
+{% extends "base.html" %}
 
 {% block content %}
 
-<h1 class="mb-4">Гражданские инициативы</h1>
+<div class="container mt-5">
 
-<div class="card mb-3">
-    <div class="card-body">
-        <h4>Благоустройство детской площадки</h4>
+    <h1 class="mb-4">
+        Инициативы
+    </h1>
 
-        <p>
-            Предлагается установить новое оборудование
-            на детской площадке.
-        </p>
+    {% if initiatives %}
 
-        <a href="#" class="btn btn-primary">
-            Подробнее
-        </a>
-    </div>
+        <div class="row">
+
+        {% for initiative in initiatives %}
+
+            <div class="col-md-6 mb-4">
+
+                <div class="card h-100 shadow-sm">
+
+                    {% if initiative.image %}
+                        <img src="{{ initiative.image.file.url }}"
+                         class="card-img-top"
+                         alt="{{ initiative.title }}"
+                         style="height:250px; object-fit:cover;">
+                    {% endif %}
+                    
+                    <div class="card-body">
+
+                        <h4 class="card-title">
+                            {{ initiative.title }}
+                        </h4>
+
+                        <p class="card-text">
+                            {{ initiative.description|truncatechars:150 }}
+                        </p>
+
+                        <p>
+                            <strong>Категория:</strong>
+                            {{ initiative.category }}
+                        </p>
+
+                        <p>
+                            <strong>Автор:</strong>
+                            {{ initiative.author }}
+                        </p>
+
+                        <p>
+                            <strong>Статус:</strong>
+                            {{ initiative.get_status_display }}
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        {% endfor %}
+
+        </div>
+
+    {% else %}
+
+        <div class="alert alert-info">
+
+            Пока нет опубликованных инициатив.
+
+        </div>
+
+    {% endif %}
+
 </div>
 
 {% endblock %}
