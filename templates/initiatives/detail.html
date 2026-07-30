@@ -63,17 +63,27 @@
 
 {% if user.is_authenticated %}
 
-<form method="post"
-      action="{% url 'vote_initiative' initiative.id %}">
+    {% if user_voted %}
 
-    {% csrf_token %}
+        <div class="alert alert-success">
+            ✅ Вы уже поддержали эту инициативу.
+        </div>
 
-    <button type="submit"
-            class="btn btn-success">
-        👍 Поддержать инициативу
-    </button>
+    {% else %}
 
-</form>
+        <form method="post"
+              action="{% url 'vote_initiative' initiative.id %}">
+
+            {% csrf_token %}
+
+            <button type="submit"
+                    class="btn btn-success">
+                👍 Поддержать инициативу
+            </button>
+
+        </form>
+
+    {% endif %}
 
 {% else %}
 
