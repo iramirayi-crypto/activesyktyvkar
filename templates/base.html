@@ -6,6 +6,15 @@
     <title>{% block title %}Активный регион{% endblock %}</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        .form-control:focus {
+            border-color: #dee2e6;
+            box-shadow: none;
+            outline: none;
+        }
+    </style>
+
 </head>
 <body>
 
@@ -22,7 +31,7 @@
     {% if user.is_authenticated %}
 
         <span class="navbar-text me-3">
-            👤 {{ user.username }}
+            {{ user.username }}
         </span>
 
         <a class="nav-link" href="{% url 'logout' %}">

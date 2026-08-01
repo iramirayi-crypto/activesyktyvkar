@@ -218,6 +218,26 @@
 
                 </p>
 
+                  <!-- Кнопка удаления комментария -->
+        {% if user == comment.author or user.is_superuser %}
+
+            <form method="post"
+                  action="{% url 'delete_comment' comment.id %}"
+                  class="mt-3">
+
+                {% csrf_token %}
+
+                <button type="submit"
+                        class="btn btn-outline-primary btn-sm rounded-pill">
+
+                    Удалить
+
+                </button>
+
+            </form>
+
+        {% endif %}
+
             </div>
 
         {% endfor %}

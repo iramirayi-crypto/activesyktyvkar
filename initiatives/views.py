@@ -8,11 +8,21 @@ from attachments.models import Attachment
 # Список опубликованных инициатив
 def initiative_list(request):
 
+    # Получаем текст поиска
+    query = request.GET.get("q", "")
+
+    # Показываем только опубликованные инициативы
     initiatives = Initiative.objects.filter(
         status="published"
     )
 
-    # Получаем первое изображение для каждой инициативы
+    # Если пользователь ввел запрос
+    if query:
+        initiatives = initiatives.filter(
+            title__icontains=query
+        )
+
+    # Получаем первое изображение
     for initiative in initiatives:
         initiative.image = Attachment.objects.filter(
             initiative=initiative
@@ -23,6 +33,7 @@ def initiative_list(request):
         "initiatives/list.html",
         {
             "initiatives": initiatives,
+            "query": query,
         },
     )
 
@@ -74,7 +85,6 @@ def initiative_detail(request, pk):
         },
     )
 
-
 # Голосование за инициативу
 def vote_initiative(request, pk):
 
@@ -109,4 +119,31 @@ def vote_initiative(request, pk):
     return redirect(
         "initiative_detail",
         pk=initiative.pk
+    )
+
+
+# Удаление комментария
+def delete_comment(request, pk):
+
+    # Если пользователь не вошел
+    if not request.user.is_authenticated:
+        return redirect("login")
+
+    # Получаем комментарий
+    comment = get_object_or_404(Comment, pk=pk)
+
+    # Проверяем права
+    if request.user == comment.author or request.user.is_superuser:
+
+        initiative_id = comment.initiative.id
+        comment.delete()
+
+        return redirect(
+            "initiative_detail",
+            pk=initiative_id
+        )
+
+    return redirect(
+        "initiative_detail",
+        pk=comment.initiative.id
     )
