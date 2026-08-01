@@ -6,70 +6,130 @@
 
 {% block content %}
 
-<div class="container mt-4">
+<div class="container mt-4 mb-5">
 
-    <h2>{{ initiative.title }}</h2>
+    <!-- Заголовок -->
+    <div class="mb-4">
 
-    <p class="text-muted">
-        {{ initiative.created_at|date:"d.m.Y" }}
-    </p>
+        <h1 class="fw-bold mb-3">
+            {{ initiative.title }}
+        </h1>
 
-<div class="mb-3">
-    <span class="badge bg-success">
-        {{ initiative.get_status_display }}
-    </span>
-</div>
+        <div class="d-flex flex-wrap align-items-center gap-3">
 
-<p>
-    <strong>Категория:</strong>
-    {{ initiative.category }}
-</p>
+            <span class="badge rounded-pill px-3 py-2"
+                  style="
+                  background:#EAF6FF;
+                  color:#0063B1;
+                  font-size:14px;">
 
-<p>
-    <strong>Автор:</strong>
-    {{ initiative.author }}
-</p>
+                {{ initiative.get_status_display }}
+
+            </span>
+
+            <span class="text-secondary">
+
+                {{ initiative.created_at|date:"d.m.Y" }}
+
+            </span>
+
+        </div>
+
+    </div>
+
+    <!-- Информация -->
+
+    <div class="row mb-4">
+
+        <div class="col-md-6">
+
+            <p class="mb-2">
+
+                <strong>Категория:</strong><br>
+
+                {{ initiative.category }}
+
+            </p>
+
+        </div>
+
+        <div class="col-md-6">
+
+            <p class="mb-2">
+
+                <strong>Автор:</strong><br>
+
+                {{ initiative.author }}
+
+            </p>
+
+        </div>
+
+    </div>
+
+    <!-- Изображение -->
 
     {% if attachments %}
-    <div class="row mb-4">
+
         {% for attachment in attachments %}
-            <div class="col-12 mb-3">
-                <img src="{{ attachment.file.url }}"
-                     class="img-fluid rounded shadow w-100"
-                     style="max-height:550px; object-fit:cover;"
-                     alt="{{ initiative.title }}">
-            </div>
+
+            <img src="{{ attachment.file.url }}"
+                 class="img-fluid rounded-4 shadow-sm mb-4 w-100"
+                 style="max-height:520px;object-fit:cover;"
+                 alt="{{ initiative.title }}">
+
         {% endfor %}
-    </div>
-{% endif %}
-<div class="card mt-4">
 
-    <div class="card-body">
+    {% endif %}
 
-        <h4>Описание</h4>
+    <!-- Описание -->
 
-        <p class="mb-0">
+    <div class="mb-5">
+
+        <h3 class="mb-3">
+
+            Описание
+
+        </h3>
+
+        <p class="fs-5 text-secondary">
+
             {{ initiative.description }}
+
         </p>
 
     </div>
 
-</div>
+    <!-- Голоса -->
 
-<div class="alert alert-success mt-4">
-    👍 Поддержали инициативу:
-    <strong>{{ votes_count }}</strong>
-</div>
+    <div class="rounded-4 p-4 mb-4"
+         style="
+         background:#F2F9FF;
+         border:1px solid #D7ECFF;">
 
-{% if user.is_authenticated %}
+        <div class="d-flex justify-content-between align-items-center">
 
-    {% if user_voted %}
+            <div>
 
-        <div class="alert alert-success">
-            ✅ Вы уже поддержали эту инициативу.
-        </div>
+                <h5 class="mb-1">
 
-    {% else %}
+                    Поддержали инициативу
+
+                </h5>
+
+                <span class="display-6 fw-bold text-primary">
+
+                    {{ votes_count }}
+
+                </span>
+
+            </div>
+
+                        {% if user.is_authenticated %}
+
+                {% if user_voted %}
+
+    <div class="d-flex align-items-center gap-3">
 
         <form method="post"
               action="{% url 'vote_initiative' initiative.id %}">
@@ -77,29 +137,165 @@
             {% csrf_token %}
 
             <button type="submit"
-                    class="btn btn-success">
-                👍 Поддержать инициативу
+                    class="btn btn-outline-primary rounded-pill">
+
+                Отменить голос
+
             </button>
 
         </form>
 
-    {% endif %}
+    </div>
 
 {% else %}
 
-<div class="alert alert-warning">
+                    <form method="post"
+                          action="{% url 'vote_initiative' initiative.id %}">
 
-    Чтобы поддержать инициативу,
-    необходимо войти в систему.
+                        {% csrf_token %}
 
-</div>
+                        <button type="submit"
+                                class="btn btn-primary rounded-pill px-4">
 
-{% endif %}
+                            Поддержать инициативу
 
-<a href="{% url 'initiative_list' %}"
-   class="btn btn-secondary mt-3">
-    ← Назад
-</a>
+                        </button>
+
+                    </form>
+
+                {% endif %}
+
+            {% else %}
+
+                <span class="text-secondary">
+
+                    Чтобы поддержать инициативу,
+                    необходимо войти в систему.
+
+                </span>
+
+            {% endif %}
+
+        </div>
+
+    </div>
+
+    <hr class="my-5">
+
+    <!-- Комментарии -->
+
+    <h3 class="mb-4">
+
+        Комментарии
+
+    </h3>
+
+    {% if comments %}
+
+        {% for comment in comments %}
+
+            <div class="mb-4 pb-3 border-bottom">
+
+                <div class="d-flex justify-content-between">
+
+                    <strong>
+
+                        {{ comment.author.username }}
+
+                    </strong>
+
+                    <small class="text-secondary">
+
+                        {{ comment.created_at|date:"d.m.Y H:i" }}
+
+                    </small>
+
+                </div>
+
+                <p class="mt-2 mb-0">
+
+                    {{ comment.text }}
+
+                </p>
+
+            </div>
+
+        {% endfor %}
+
+    {% else %}
+
+        <p class="text-secondary">
+
+            Пока нет комментариев.
+
+        </p>
+
+    {% endif %}
+
+    <hr class="my-5">
+
+        <!-- Добавить комментарий -->
+
+    {% if user.is_authenticated %}
+
+        <h3 class="mb-4">
+
+            Добавить комментарий
+
+        </h3>
+
+        <form method="post"
+              action="{% url 'add_comment' initiative.id %}">
+
+            {% csrf_token %}
+
+            <div class="mb-3">
+
+                <textarea
+                    name="text"
+                    class="form-control rounded-4"
+                    rows="5"
+                    placeholder="Введите комментарий..."
+                    required></textarea>
+
+            </div>
+
+            <button type="submit"
+                    class="btn btn-primary rounded-pill px-4">
+
+                Отправить
+
+            </button>
+
+        </form>
+
+    {% else %}
+
+        <div class="rounded-4 p-4"
+             style="
+             background:#F7FBFF;
+             border:1px solid #D7ECFF;">
+
+            <p class="mb-0 text-secondary">
+
+                Войдите в систему, чтобы оставить комментарий.
+
+            </p>
+
+        </div>
+
+    {% endif %}
+
+    <div class="mt-5">
+
+        <a href="{% url 'initiative_list' %}"
+           class="btn btn-outline-primary rounded-pill px-4">
+
+            ← Назад к инициативам
+
+        </a>
+
+    </div>
 
 </div>
 
