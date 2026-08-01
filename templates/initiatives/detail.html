@@ -221,20 +221,23 @@
                   <!-- Кнопка удаления комментария -->
         {% if user == comment.author or user.is_superuser %}
 
-            <form method="post"
-                  action="{% url 'delete_comment' comment.id %}"
-                  class="mt-3">
+           <div class="d-flex gap-2 mt-3">
 
-                {% csrf_token %}
+    <a href="{% url 'edit_comment' comment.id %}"
+       class="btn btn-outline-primary btn-sm rounded-pill">
+        Редактировать
+    </a>
 
-                <button type="submit"
-                        class="btn btn-outline-primary btn-sm rounded-pill">
+    <form method="post"
+          action="{% url 'delete_comment' comment.id %}">
 
-                    Удалить
+        {% csrf_token %}
 
-                </button>
+        <button class="btn btn-outline-danger btn-sm rounded-pill">
+            Удалить
+        </button>
 
-            </form>
+    </form> 
 
         {% endif %}
 

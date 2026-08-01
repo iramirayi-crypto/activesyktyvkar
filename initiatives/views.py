@@ -147,3 +147,39 @@ def delete_comment(request, pk):
         "initiative_detail",
         pk=comment.initiative.id
     )
+
+# Редактирование комментария
+def edit_comment(request, pk):
+
+    # Если пользователь не вошел
+    if not request.user.is_authenticated:
+        return redirect("login")
+
+    # Получаем комментарий
+    comment = get_object_or_404(Comment, pk=pk)
+
+    # Только автор может редактировать комментарий
+    if request.user != comment.author:
+        return redirect(
+            "initiative_detail",
+            pk=comment.initiative.id
+        )
+
+    # Если отправлена форма
+    if request.method == "POST":
+
+        comment.text = request.POST.get("text")
+        comment.save()
+
+        return redirect(
+            "initiative_detail",
+            pk=comment.initiative.id
+        )
+
+    return render(
+        request,
+        "initiatives/edit_comment.html",
+        {
+            "comment": comment
+        }
+    )

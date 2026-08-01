@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Редактирование комментария{% endblock %}
+
+{% block content %}
+
+<div class="container mt-5" style="max-width:700px;">
+
+    <h2 class="mb-4">
+        Редактировать комментарий
+    </h2>
+
+    <form method="post">
+
+        {% csrf_token %}
+
+        <div class="mb-3">
+
+            <textarea
+                name="text"
+                class="form-control"
+                rows="5"
+                required>{{ comment.text }}</textarea>
+
+        </div>
+
+        <button type="submit"
+                class="btn btn-primary">
+
+            Сохранить
+
+        </button>
+
+        <a href="{% url 'initiative_detail' comment.initiative.id %}"
+           class="btn btn-outline-secondary">
+
+            Отмена
+
+        </a>
+
+    </form>
+
+</div>
+
+{% endblock %}
