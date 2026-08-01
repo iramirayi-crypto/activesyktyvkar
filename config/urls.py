@@ -10,9 +10,10 @@ admin.site.index_title = "Панель управления"
 admin.site.site_url = "/" 
 
 urlpatterns = [
-    path('', views.home, name='home'),
-    path('admin/', admin.site.urls),
-    path('initiatives/', include('initiatives.urls')),
+    path("", views.home, name="home"),
+    path("admin/", admin.site.urls),
+    path("initiatives/", include("initiatives.urls")),
+    path("accounts/", include("accounts.urls")),
 ]
 
 urlpatterns += static(

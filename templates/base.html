@@ -13,11 +13,35 @@
     <div class="container">
         <a class="navbar-brand" href="/">Активный регион</a>
 
-        <div class="navbar-nav ms-auto">
-            <a class="nav-link" href="#">Инициативы</a>
-            <a class="nav-link" href="#">Войти</a>
-            <a class="nav-link" href="#">Регистрация</a>
-        </div>
+      <div class="navbar-nav ms-auto">
+
+    <a class="nav-link" href="{% url 'initiative_list' %}">
+        Инициативы
+    </a>
+
+    {% if user.is_authenticated %}
+
+        <span class="navbar-text me-3">
+            👤 {{ user.username }}
+        </span>
+
+        <a class="nav-link" href="{% url 'logout' %}">
+            Выйти
+        </a>
+
+    {% else %}
+
+        <a class="nav-link" href="{% url 'login' %}">
+            Войти
+        </a>
+
+        <a class="nav-link" href="{% url 'register' %}">
+            Регистрация
+        </a>
+
+    {% endif %}
+
+</div>  
     </div>
 </nav>
 
