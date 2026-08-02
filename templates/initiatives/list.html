@@ -9,8 +9,8 @@
     </h1>
 
 
-    <!-- Поиск инициатив -->
-<form method="get" class="mb-4">
+<!-- Поиск и фильтр -->
+<form method="get" class="mb-5">
 
     <div class="input-group">
 
@@ -21,8 +21,34 @@
             placeholder="Поиск инициатив..."
             value="{{ query }}">
 
-        <button type="submit"
-                class="btn btn-primary">
+        <select
+            name="category"
+            class="form-select"
+            style="max-width:230px;">
+
+            <option value="">
+                Все категории
+            </option>
+
+            {% for category_item in categories %}
+
+                <option
+                    value="{{ category_item.id }}"
+                    {% if category == category_item.id|stringformat:"s" %}
+                        selected
+                    {% endif %}>
+
+                    {{ category_item.name }}
+
+                </option>
+
+            {% endfor %}
+
+        </select>
+
+        <button
+            type="submit"
+            class="btn btn-primary px-4">
 
             Найти
 

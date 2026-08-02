@@ -1,25 +1,34 @@
 from django.shortcuts import render, get_object_or_404, redirect
+from django.db.models import Q
 
-from .models import Initiative, Vote
+from .models import Initiative, Vote, Category
 from comments.models import Comment
 from attachments.models import Attachment
-
 
 # Список опубликованных инициатив
 def initiative_list(request):
 
     # Получаем текст поиска
     query = request.GET.get("q", "")
+    category = request.GET.get("category", "")
 
     # Показываем только опубликованные инициативы
     initiatives = Initiative.objects.filter(
         status="published"
     )
 
-    # Если пользователь ввел запрос
+    # Поиск
     if query:
         initiatives = initiatives.filter(
-            title__icontains=query
+            Q(title__icontains=query) |
+            Q(description__icontains=query) |
+            Q(category__name__icontains=query)
+        )
+
+    # Фильтр по категории
+    if category:
+        initiatives = initiatives.filter(
+            category__id=category
         )
 
     # Получаем первое изображение
@@ -34,9 +43,10 @@ def initiative_list(request):
         {
             "initiatives": initiatives,
             "query": query,
+            "category": category,
+            "categories": Category.objects.all(),
         },
     )
-
 
 # Страница одной инициативы
 def initiative_detail(request, pk):
@@ -58,7 +68,7 @@ def initiative_detail(request, pk):
         initiative=initiative
     ).count()
 
-    # Проверяем, голосовал ли пользователь
+    # Проверяем, голосовал ли пользаователь
     user_voted = False
 
     if request.user.is_authenticated:

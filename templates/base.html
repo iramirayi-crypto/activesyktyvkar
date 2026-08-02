@@ -1,57 +1,58 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Активный регион{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css"
+      rel="stylesheet">
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <style>
-        .form-control:focus {
-            border-color: #dee2e6;
-            box-shadow: none;
-            outline: none;
-        }
-    </style>
+    <link rel="stylesheet"
+    href="{% static 'css/style.css' %}">
 
 </head>
 <body>
-
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+
     <div class="container">
-        <a class="navbar-brand" href="/">Активный регион</a>
 
-      <div class="navbar-nav ms-auto">
-
-    <a class="nav-link" href="{% url 'initiative_list' %}">
-        Инициативы
-    </a>
-
-    {% if user.is_authenticated %}
-
-        <span class="navbar-text me-3">
-            {{ user.username }}
-        </span>
-
-        <a class="nav-link" href="{% url 'logout' %}">
-            Выйти
+        <a class="navbar-brand" href="/">
+            Активный регион
         </a>
 
-    {% else %}
+        <div class="navbar-nav ms-auto d-flex flex-row align-items-center gap-2">
 
-        <a class="nav-link" href="{% url 'login' %}">
-            Войти
-        </a>
+            <a class="btn" href="{% url 'initiative_list' %}">
+                Инициативы
+            </a>
 
-        <a class="nav-link" href="{% url 'register' %}">
-            Регистрация
-        </a>
+            {% if user.is_authenticated %}
 
-    {% endif %}
+                <span class="btn">
+                    {{ user.username }}
+                </span>
 
-</div>  
+                <a class="btn" href="{% url 'logout' %}">
+                    Выйти
+                </a>
+
+            {% else %}
+
+                <a class="btn" href="{% url 'login' %}">
+                    Войти
+                </a>
+
+                <a class="btn" href="{% url 'register' %}">
+                    Регистрация
+                </a>
+
+            {% endif %}
+
+        </div>
+
     </div>
+
 </nav>
 
 <div class="container mt-4">

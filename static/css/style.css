@@ -1,0 +1,59 @@
+/* =========================
+   Шапка сайта
+   ========================= */
+
+/* Увеличиваем высоту верхней панели */
+.navbar {
+    padding-top: 24px;
+    padding-bottom: 24px;
+}
+
+/* =========================
+   Кнопки в шапке
+   ========================= */
+
+/* Все кнопки одинаковые */
+.navbar .btn {
+    background: transparent;
+    color: white;
+    border: 1px solid white;
+    border-radius: 50rem;
+    padding: 8px 20px;
+    font-size: 1rem;
+    transition: none;
+}
+
+/* При наведении ничего не меняется */
+.navbar .btn:hover,
+.navbar .btn:focus,
+.navbar .btn:active {
+    background: transparent;
+    color: white;
+    border: 1px solid white;
+    box-shadow: none;
+}
+
+/* =========================
+   Выпадающий список категорий
+   ========================= */
+
+/* Размер и скругление списка категорий */
+.form-select {
+    width: 240px;
+    border-radius: 12px;
+}
+
+
+/* =========================
+   Стили при выборе категории
+   ========================= */
+
+/* Убираем синюю подсветку при нажатии */
+.form-select:focus,
+.form-select:active,
+.form-select:focus-visible {
+    border-color: #ced4da !important;
+    box-shadow: none !important;
+    outline: none !important;
+    -webkit-appearance: none;
+}
