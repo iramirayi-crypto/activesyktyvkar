@@ -29,9 +29,13 @@
 
             {% if user.is_authenticated %}
 
-                <span class="btn">
+                 <a
+                    class="btn"
+                 href="{% url 'profile' %}">
+
                     {{ user.username }}
-                </span>
+
+                </a>
 
                 <a class="btn" href="{% url 'logout' %}">
                     Выйти

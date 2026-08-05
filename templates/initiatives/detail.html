@@ -194,54 +194,82 @@
 
         {% for comment in comments %}
 
-            <div class="mb-4 pb-3 border-bottom">
+         {% load static %}
 
-                <div class="d-flex justify-content-between">
+<div class="d-flex mb-4 pb-3 border-bottom">
 
-                    <strong>
+    <div class="me-3">
 
-                        {{ comment.author.username }}
+        {% if comment.author.profile.avatar %}
 
-                    </strong>
+            <img
+                src="{{ comment.author.profile.avatar.url }}"
+                class="rounded-circle"
+                width="60"
+                height="60"
+                style="object-fit: cover;">
 
-                    <small class="text-secondary">
+        {% else %}
 
-                        {{ comment.created_at|date:"d.m.Y H:i" }}
-
-                    </small>
-
-                </div>
-
-                <p class="mt-2 mb-0">
-
-                    {{ comment.text }}
-
-                </p>
-
-                  <!-- Кнопка удаления комментария -->
-        {% if user == comment.author or user.is_superuser %}
-
-           <div class="d-flex gap-2 mt-3">
-
-    <a href="{% url 'edit_comment' comment.id %}"
-       class="btn btn-outline-primary btn-sm rounded-pill">
-        Редактировать
-    </a>
-
-    <form method="post"
-          action="{% url 'delete_comment' comment.id %}">
-
-        {% csrf_token %}
-
-        <button class="btn btn-outline-danger btn-sm rounded-pill">
-            Удалить
-        </button>
-
-    </form> 
+            <img
+                src="{% static 'css/images/default_avatar.jpg' %}"
+                class="rounded-circle"
+                width="60"
+                height="60"
+                style="object-fit: cover;">
 
         {% endif %}
 
+    </div>
+
+    <div class="flex-grow-1">
+
+        <div class="d-flex justify-content-between align-items-center">
+
+            <strong>
+                {{ comment.author.username }}
+            </strong>
+
+            <small class="text-secondary">
+                {{ comment.created_at|date:"d.m.Y H:i" }}
+            </small>
+
+        </div>
+
+        <p class="mt-2">
+            {{ comment.text }}
+        </p>
+
+        {% if user == comment.author or user.is_superuser %}
+
+            <div class="d-flex gap-2">
+
+                <a href="{% url 'edit_comment' comment.id %}"
+                   class="btn btn-outline-primary btn-sm rounded-pill">
+                    Редактировать
+                </a>
+
+                <form method="post"
+                      action="{% url 'delete_comment' comment.id %}">
+
+                    {% csrf_token %}
+
+                    <button
+                        type="submit"
+                        class="btn btn-outline-danger btn-sm rounded-pill">
+                        Удалить
+                    </button>
+
+                </form>
+
             </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
 
         {% endfor %}
 
@@ -255,7 +283,6 @@
 
     {% endif %}
 
-    <hr class="my-5">
 
         <!-- Добавить комментарий -->
 
