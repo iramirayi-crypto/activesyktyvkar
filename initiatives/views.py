@@ -4,6 +4,7 @@ from django.db.models import Q
 from .models import Initiative, Vote, Category
 from comments.models import Comment
 from attachments.models import Attachment
+from django.contrib.auth.decorators import login_required
 
 # Список опубликованных инициатив
 def initiative_list(request):
@@ -191,5 +192,22 @@ def edit_comment(request, pk):
         "initiatives/edit_comment.html",
         {
             "comment": comment
+        }
+    )
+
+
+# Мои инициативы
+@login_required
+def my_initiatives(request):
+
+    initiatives = Initiative.objects.filter(
+        author=request.user
+    )
+
+    return render(
+        request,
+        "initiatives/my_initiatives.html",
+        {
+            "initiatives": initiatives
         }
     )

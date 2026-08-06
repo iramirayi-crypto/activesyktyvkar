@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}
+Мои инициативы
+{% endblock %}
+
+{% block content %}
+
+<div class="container mt-5">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <h2>Мои инициативы</h2>
+
+        <a href="#"
+           class="btn btn-primary">
+
+            + Создать инициативу
+
+        </a>
+
+    </div>
+
+    {% if initiatives %}
+
+        <table class="table table-bordered">
+
+            <thead>
+
+                <tr>
+
+                    <th>Название</th>
+
+                    <th>Статус</th>
+
+                    <th>Дата</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                {% for initiative in initiatives %}
+
+                    <tr>
+
+                        <td>
+
+                            {{ initiative.title }}
+
+                        </td>
+
+                        <td>
+
+                            {{ initiative.get_status_display }}
+
+                        </td>
+
+                        <td>
+
+                            {{ initiative.created_at|date:"d.m.Y" }}
+
+                        </td>
+
+                    </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    {% else %}
+
+        <p>
+
+            У вас пока нет инициатив.
+
+        </p>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}
