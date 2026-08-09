@@ -1,10 +1,10 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.db.models import Q
+from django.contrib.auth.decorators import login_required
 
 from .models import Initiative, Vote, Category
 from comments.models import Comment
 from attachments.models import Attachment
-from django.contrib.auth.decorators import login_required
 
 # Список опубликованных инициатив
 def initiative_list(request):
@@ -210,4 +210,27 @@ def my_initiatives(request):
         {
             "initiatives": initiatives
         }
+    )
+
+
+# Создание инициативы
+@login_required
+def create_initiative(request):
+
+    if request.method == "POST":
+        title = request.POST.get("title")
+        description = request.POST.get("description")
+
+        Initiative.objects.create(
+            author=request.user,
+            title=title,
+            description=description,
+            status="moderation"
+        )
+
+        return redirect("my_initiatives")
+
+    return render(
+        request,
+        "initiatives/create_initiative.html"
     )
