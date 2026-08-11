@@ -57,3 +57,35 @@
     outline: none !important;
     -webkit-appearance: none;
 }
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.back-link {
+    display: inline-flex !important;
+    align-items: center;
+    text-decoration: none !important;
+    color: #000000 !important;
+}
+
+.back-arrow {
+    display: inline-block;
+    font-size: 42px !important;
+    font-weight: 500;
+    line-height: 1 !important;
+    color: #000000 !important;
+}
+
+.back-link:hover,
+.back-link:hover .back-arrow {
+    color: #000000 !important;
+}
+
+.card-img-top {
+    height: 315px;
+    object-fit: cover;
+}

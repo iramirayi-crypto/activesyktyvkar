@@ -5,7 +5,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 admin.site.site_header = "Администрирование"
-admin.site.site_title = "Активный регион"
+admin.site.site_title = "Активный Сыктывкар"
 admin.site.index_title = "Панель управления"
 admin.site.site_url = "/" 
 

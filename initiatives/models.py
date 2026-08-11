@@ -13,7 +13,6 @@ class Category(models.Model):
     def __str__(self):
         return self.name
 
-
 class Initiative(models.Model):
 
     STATUS_CHOICES = [
@@ -24,7 +23,15 @@ class Initiative(models.Model):
     ]
 
     title = models.CharField("Название", max_length=200)
+
     description = models.TextField("Описание")
+
+    location = models.TextField(
+        "Место реализации",
+        max_length=500,
+        blank=True,
+        null=True
+    )
 
     category = models.ForeignKey(
         Category,
@@ -33,12 +40,12 @@ class Initiative(models.Model):
     )
 
     author = models.ForeignKey(
-    User,
-    on_delete=models.CASCADE,
-    verbose_name="Автор",
-    null=True,
-    blank=True,
-)
+        User,
+        on_delete=models.CASCADE,
+        verbose_name="Автор",
+        null=True,
+        blank=True,
+    )
 
     status = models.CharField(
         "Статус",
@@ -51,6 +58,14 @@ class Initiative(models.Model):
         "Дата создания",
         auto_now_add=True
     )
+
+    class Meta:
+        verbose_name = "Инициатива"
+        verbose_name_plural = "Инициативы"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return self.title
 
     class Meta:
         verbose_name = "Инициатива"

@@ -1,0 +1,230 @@
+{% extends "base.html" %}
+
+{% block title %}
+Создать инициативу
+{% endblock %}
+
+{% block content %}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+
+            <!-- Заголовок -->
+            <div class="mb-4">
+                <a href="{% url 'my_initiatives' %}"
+                   class="text-decoration-none text-secondary">
+                    ←
+                </a>
+
+                <h1 class="mt-3 mb-2 fw-bold">
+                    Создать инициативу
+                </h1>
+
+                <p class="text-secondary mb-0">
+                    Предложите идею, которая поможет сделать Сыктывкар лучше.
+                </p>
+            </div>
+
+
+            <!-- Форма -->
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-body p-4 p-md-5">
+
+                    <form method="post" enctype="multipart/form-data">
+
+                        {% csrf_token %}
+
+                        <!-- Название -->
+                        <div class="mb-4">
+                            <label for="title"
+                                   class="form-label fw-semibold">
+                                Название инициативы
+                                <span class="text-primary">*</span>
+                            </label>
+
+                            <input
+                                type="text"
+                                id="title"
+                                name="title"
+                                class="form-control form-control-lg"
+                                placeholder="Например: Установить освещение в парке"
+                                required
+                            >
+
+                            <div class="form-text">
+                                Коротко сформулируйте вашу идею.
+                            </div>
+                        </div>
+
+
+                        <!-- Категория -->
+                        <div class="mb-4">
+                            <label for="category"
+                                   class="form-label fw-semibold">
+                                Категория
+                                <span class="text-primary">*</span>
+                            </label>
+
+                            <select
+                                id="category"
+                                name="category"
+                                class="form-select category-select"
+                                required
+                            >
+                                <option value="">
+                                    Выберите категорию
+                                </option>
+
+                                {% for category in categories %}
+                                    <option value="{{ category.id }}">
+                                        {{ category.name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+
+                        <!-- Описание -->
+                        <div class="mb-4">
+                            <label for="description"
+                                   class="form-label fw-semibold">
+                                Описание инициативы
+                                <span class="text-primary">*</span>
+                            </label>
+
+                            <textarea
+                                id="description"
+                                name="description"
+                                class="form-control"
+                                rows="7"
+                                placeholder="Расскажите, какую проблему вы хотите решить и что предлагаете сделать..."
+                                required
+                            ></textarea>
+
+                            <div class="form-text">
+                                Опишите проблему, предлагаемое решение и ожидаемый результат.
+                            </div>
+                        </div>
+
+
+                        <!-- Место реализации -->
+                        <div class="mb-4">
+                            <label for="location"
+                                   class="form-label fw-semibold">
+                                Место реализации
+                                <span class="text-primary">*</span>
+                            </label>
+
+                            <input
+                                type="text"
+                                id="location"
+                                name="location"
+                                class="form-control form-control-lg"
+                                list="syktyvkar-addresses"
+                                placeholder="Начните вводить адрес в Сыктывкаре"
+                                autocomplete="off"
+                                required
+                            >
+
+                            <datalist id="syktyvkar-addresses">
+                                <option value="Сыктывкар, ул. Коммунистическая">
+                                <option value="Сыктывкар, ул. Ленина">
+                                <option value="Сыктывкар, ул. Первомайская">
+                                <option value="Сыктывкар, ул. Морозова">
+                                <option value="Сыктывкар, Октябрьский проспект">
+                                <option value="Сыктывкар, ул. Интернациональная">
+                                <option value="Сыктывкар, ул. Карла Маркса">
+                                <option value="Сыктывкар, ул. Орджоникидзе">
+                                <option value="Сыктывкар, Центральный район">
+                                <option value="Сыктывкар, Давпон">
+                                <option value="Сыктывкар, Лесозавод">
+                            </datalist>
+
+                            <div class="form-text">
+                                Укажите район, улицу, парк, двор или другое конкретное место,
+                                где планируется реализовать инициативу.
+                            </div>
+                        </div>
+
+
+                        <!-- Изображение -->
+                        <div class="mb-4">
+                            <label for="file"
+                                   class="form-label fw-semibold">
+                                Фотография
+                            </label>
+
+                            <div class="border rounded-3 p-4 text-center bg-light">
+
+                                <p class="mb-2 fw-semibold">
+                                    Добавьте фотографию
+                                </p>
+
+                                <p class="text-secondary small mb-3">
+                                    Она поможет лучше представить вашу инициативу.
+                                </p>
+
+                                <input
+                                    type="file"
+                                    id="file"
+                                    name="file"
+                                    class="form-control"
+                                    accept="image/*"
+                                >
+
+                            </div>
+                        </div>
+
+
+                        <!-- Информация о модерации -->
+                        <div class="alert alert-light border rounded-3 mb-4">
+                            <div class="fw-semibold mb-1">
+                                Что произойдёт после отправки?
+                            </div>
+
+                            <div class="text-secondary small">
+                                Инициатива будет отправлена на модерацию.
+                                После проверки она появится в общем списке инициатив.
+                            </div>
+                        </div>
+
+
+                        <!-- Кнопки -->
+                        <div class="d-flex flex-column flex-sm-row
+                                    justify-content-end gap-2">
+
+                            <a href="{% url 'my_initiatives' %}"
+                               class="btn btn-outline-secondary px-4">
+                                Отмена
+                            </a>
+
+                            <button
+                                type="submit"
+                                class="btn btn-primary px-4"
+                            >
+                                Отправить на модерацию
+                            </button>
+
+                        </div>
+
+                    </form>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<style>
+    .category-select {
+        width: 100%;
+        height: 58px;
+        padding: 0 18px;
+        font-size: 16px;
+        border-radius: 10px;
+    }
+</style>
+
+{% endblock %}

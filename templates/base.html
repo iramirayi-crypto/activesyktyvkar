@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Активный регион{% endblock %}</title>
+    <title>{% block title %}Активный Сыктывкар{% endblock %}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css"
       rel="stylesheet">
 
@@ -18,14 +18,10 @@
     <div class="container">
 
         <a class="navbar-brand" href="/">
-            Активный регион
+            Активный Сыктывкар
         </a>
 
         <div class="navbar-nav ms-auto d-flex flex-row align-items-center gap-2">
-
-            <a href="{% url 'my_initiatives' %}" class="nav-link">
-                Мои инициативы
-            </a>
 
             <a class="btn" href="{% url 'initiative_list' %}">
                 Инициативы

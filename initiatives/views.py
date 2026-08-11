@@ -52,38 +52,43 @@ def initiative_list(request):
 # Страница одной инициативы
 def initiative_detail(request, pk):
 
-    # Получаем опубликованную инициативу
     initiative = get_object_or_404(
         Initiative,
-        pk=pk,
-        status="published"
+        pk=pk
     )
 
-    # Получаем изображения инициативы
+    # Неопубликованную инициативу может смотреть
+    # только её автор
+    if initiative.status != "published":
+        if not request.user.is_authenticated or initiative.author != request.user:
+            return redirect("initiative_list")
+
+    # Изображения доступны всегда
     attachments = Attachment.objects.filter(
         initiative=initiative
     )
 
-    # Подсчитываем количество голосов
-    votes_count = Vote.objects.filter(
-        initiative=initiative
-    ).count()
-
-    # Проверяем, голосовал ли пользаователь
+    # Голоса и комментарии только для опубликованных
+    votes_count = 0
     user_voted = False
+    comments = Comment.objects.none()
 
-    if request.user.is_authenticated:
-        user_voted = Vote.objects.filter(
-            initiative=initiative,
-            user=request.user
-        ).exists()
+    if initiative.status == "published":
 
-    # Получаем комментарии к инициативе
-    comments = Comment.objects.filter(
-        initiative=initiative
-    )
+        votes_count = Vote.objects.filter(
+            initiative=initiative
+        ).count()
 
-    # Передаем данные в шаблон
+        if request.user.is_authenticated:
+            user_voted = Vote.objects.filter(
+                initiative=initiative,
+                user=request.user
+            ).exists()
+
+        comments = Comment.objects.filter(
+            initiative=initiative
+        )
+
     return render(
         request,
         "initiatives/detail.html",
@@ -93,7 +98,7 @@ def initiative_detail(request, pk):
             "votes_count": votes_count,
             "user_voted": user_voted,
             "comments": comments,
-        },
+        }
     )
 
 # Голосование за инициативу
@@ -199,10 +204,14 @@ def edit_comment(request, pk):
 # Мои инициативы
 @login_required
 def my_initiatives(request):
-
     initiatives = Initiative.objects.filter(
         author=request.user
     )
+
+    for initiative in initiatives:
+        initiative.image = Attachment.objects.filter(
+            initiative=initiative
+        ).first()
 
     return render(
         request,
@@ -216,21 +225,42 @@ def my_initiatives(request):
 # Создание инициативы
 @login_required
 def create_initiative(request):
-
     if request.method == "POST":
         title = request.POST.get("title")
         description = request.POST.get("description")
+        location = request.POST.get("location")
+        category_id = request.POST.get("category")
+        uploaded_file = request.FILES.get("file")
 
-        Initiative.objects.create(
+        category = get_object_or_404(
+            Category,
+            id=category_id
+        )
+
+        initiative = Initiative.objects.create(
             author=request.user,
             title=title,
             description=description,
+            location=location,
+            category=category,
             status="moderation"
         )
 
+        # Сохраняем загруженный файл
+        if uploaded_file:
+            Attachment.objects.create(
+                initiative=initiative,
+                file=uploaded_file
+            )
+
         return redirect("my_initiatives")
+
+    categories = Category.objects.all()
 
     return render(
         request,
-        "initiatives/create_initiative.html"
+        "initiatives/create_initiative.html",
+        {
+            "categories": categories
+        }
     )

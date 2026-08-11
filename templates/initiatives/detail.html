@@ -8,6 +8,11 @@
 
 <div class="container mt-4 mb-5">
 
+                <a href="javascript:history.back()"
+   class="text-decoration-none text-dark">
+    ←
+</a>
+
     <!-- Заголовок -->
     <div class="mb-4">
 
@@ -37,33 +42,36 @@
 
     </div>
 
-    <!-- Информация -->
+   <!-- Информация -->
 
-    <div class="row mb-4">
+<div class="row mb-4">
 
-        <div class="col-md-6">
+    <div class="col-md-4">
 
-            <p class="mb-2">
+        <p class="mb-2">
+            <strong>Категория:</strong><br>
+            {{ initiative.category }}
+        </p>
 
-                <strong>Категория:</strong><br>
+    </div>
 
-                {{ initiative.category }}
+    <div class="col-md-4">
 
-            </p>
+        <p class="mb-2">
+            <strong>Место реализации:</strong><br>
+            {{ initiative.location }}
+        </p>
 
-        </div>
+    </div>
 
-        <div class="col-md-6">
+    <div class="col-md-4">
 
-            <p class="mb-2">
+        <p class="mb-2">
+            <strong>Автор:</strong><br>
+            {{ initiative.author }}
+        </p>
 
-                <strong>Автор:</strong><br>
-
-                {{ initiative.author }}
-
-            </p>
-
-        </div>
+    </div>
 
     </div>
 
