@@ -75,6 +75,23 @@
                     >
                         Подробнее
                     </a>
+{% if initiative.status == "moderation" or initiative.status == "rejected" %}
+    <a href="{% url 'edit_initiative' initiative.pk %}"
+       class="btn btn-warning">
+        Редактировать
+    </a>
+{% endif %}
+
+<form method="post"
+      action="{% url 'delete_initiative' initiative.pk %}"
+      style="display: inline;">
+    {% csrf_token %}
+    <button type="submit"
+            class="btn btn-danger"
+            onclick="return confirm('Удалить инициативу?');">
+        Удалить
+    </button>
+</form>
 
                 </div>
             </div>

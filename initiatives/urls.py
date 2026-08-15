@@ -9,4 +9,9 @@ urlpatterns = [
     path("comment/<int:pk>/edit/", views.edit_comment, name="edit_comment"),
     path("my-initiatives/", views.my_initiatives, name="my_initiatives"),
     path("create/", views.create_initiative, name="create_initiative"),
+    path(
+    "delete/<int:pk>/",
+    views.delete_initiative,
+    name="delete_initiative"
+),
 ]

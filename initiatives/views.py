@@ -264,3 +264,21 @@ def create_initiative(request):
             "categories": categories
         }
     )
+
+@login_required
+def delete_initiative(request, pk):
+    initiative = get_object_or_404(
+        Initiative,
+        pk=pk,
+        author=request.user
+    )
+
+    if request.method == "POST":
+        initiative.delete()
+        return redirect("my_initiatives")
+
+    return render(
+        request,
+        "initiatives/delete_initiative.html",
+        {"initiative": initiative}
+    )
