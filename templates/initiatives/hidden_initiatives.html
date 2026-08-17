@@ -1,49 +1,33 @@
 {% extends "base.html" %}
 
-{% block title %}
-Мои инициативы
-{% endblock %}
-
 {% block content %}
 
 <div class="container mt-5">
 
-    <a href="{% url 'initiative_list' %}"
-       class="text-decoration-none text-secondary">
-        ←
-    </a>
+                <a href="javascript:history.back()"
+   class="text-decoration-none text-dark">
+    ←
+</a>
 
- <div class="d-flex justify-content-between align-items-center mb-4">
+    <!-- Заголовок и кнопки -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
 
-    <h2>Мои инициативы</h2>
+        <h2 class="mb-0">
+            Мои  скрытые инициативы
+        </h2>
 
-    <div class="d-flex gap-2">
-
-        <a
-            href="{% url 'hidden_initiatives' %}"
-            class="btn btn-outline-secondary"
-        >
-            Скрытые
-        </a>
-
-        <a
-            href="{% url 'create_initiative' %}"
-            class="btn btn-primary"
-        >
-            Создать инициативу
-        </a>
 
     </div>
 
-    </div> 
-    
+    <!-- Сетка инициатив -->
     {% if initiatives %}
 
         <div class="row g-4">
 
             {% for initiative in initiatives %}
 
-                <div class="col-md-4">
+                <div class="col-12 col-md-6 col-lg-4">
+
                     <div class="card h-100">
 
                         {% if initiative.image %}
@@ -87,8 +71,9 @@
                                 {{ initiative.created_at|date:"d.m.Y" }}
                             </p>
 
-                            <!-- Лайки и комментарии только для опубликованных -->
+                            <!-- Лайки и комментарии -->
                             {% if initiative.status == "published" %}
+
                                 <div class="text-muted mb-3">
 
                                     <i class="bi bi-hand-thumbs-up"></i>
@@ -100,11 +85,12 @@
                                     </span>
 
                                 </div>
+
                             {% endif %}
 
+                            <!-- Кнопки -->
                             <div class="mt-auto pt-3">
 
-                                <!-- Подробнее + Редактировать -->
                                 <div class="d-flex gap-2">
 
                                     <a
@@ -115,20 +101,22 @@
                                     </a>
 
                                     {% if initiative.status == "moderation" or initiative.status == "rejected" %}
+
                                         <a
                                             href="{% url 'edit_initiative' initiative.pk %}"
                                             class="btn btn-primary"
                                         >
                                             Редактировать
                                         </a>
+
                                     {% endif %}
 
                                 </div>
 
-                                <!-- Удалить + Скрыть -->
                                 <div class="d-flex gap-2 mt-2">
 
                                     {% if initiative.status == "moderation" or initiative.status == "rejected" %}
+
                                         <form
                                             method="post"
                                             action="{% url 'delete_initiative' initiative.pk %}"
@@ -143,6 +131,7 @@
                                                 Удалить
                                             </button>
                                         </form>
+
                                     {% endif %}
 
                                     <form
@@ -153,7 +142,7 @@
 
                                         <button
                                             type="submit"
-                                               class="btn btn-outline-secondary"
+                                            class="btn btn-outline-secondary"
                                         >
                                             Скрыть
                                         </button>
@@ -164,7 +153,9 @@
                             </div>
 
                         </div>
+
                     </div>
+
                 </div>
 
             {% endfor %}
@@ -185,6 +176,7 @@
 
     {% endif %}
 
+</div>
 </div>
 
 {% endblock %}

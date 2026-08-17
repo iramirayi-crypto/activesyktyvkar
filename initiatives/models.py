@@ -59,13 +59,10 @@ class Initiative(models.Model):
         auto_now_add=True
     )
 
-    class Meta:
-        verbose_name = "Инициатива"
-        verbose_name_plural = "Инициативы"
-        ordering = ["-created_at"]
-
-    def __str__(self):
-        return self.title
+    is_hidden = models.BooleanField(
+    default=False,
+    verbose_name="Скрыта"
+    )
 
     class Meta:
         verbose_name = "Инициатива"

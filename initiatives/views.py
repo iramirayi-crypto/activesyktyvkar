@@ -1,19 +1,19 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.db.models import Q
-from django.contrib.auth.decorators import login_required
+from django.db.models import Q, Count 
+from django.contrib.auth.decorators import login_required, user_passes_test
 
 from .models import Initiative, Vote, Category
 from comments.models import Comment
 from attachments.models import Attachment
 
+
 # Список опубликованных инициатив
 def initiative_list(request):
 
-    # Получаем текст поиска
     query = request.GET.get("q", "")
     category = request.GET.get("category", "")
 
-    # Показываем только опубликованные инициативы
+    # Только опубликованные инициативы
     initiatives = Initiative.objects.filter(
         status="published"
     )
@@ -32,11 +32,19 @@ def initiative_list(request):
             category__id=category
         )
 
-    # Получаем первое изображение
+    # Изображение, количество голосов и комментариев
     for initiative in initiatives:
         initiative.image = Attachment.objects.filter(
             initiative=initiative
         ).first()
+
+        initiative.votes_count = Vote.objects.filter(
+            initiative=initiative
+        ).count()
+
+        initiative.comments_count = Comment.objects.filter(
+            initiative=initiative
+        ).count()
 
     return render(
         request,
@@ -49,6 +57,15 @@ def initiative_list(request):
         },
     )
 
+# Проверки модератора
+def is_moderator(user):
+    return (
+        user.is_authenticated
+        and (
+            user.groups.filter(name="Модераторы").exists()
+            or user.is_superuser
+        )
+    )
 # Страница одной инициативы
 def initiative_detail(request, pk):
 
@@ -203,9 +220,13 @@ def edit_comment(request, pk):
 
 # Мои инициативы
 @login_required
-def my_initiatives(request):
+def hidden_initiatives(request):
     initiatives = Initiative.objects.filter(
-        author=request.user
+        author=request.user,
+        is_hidden=True
+    ).annotate(
+        votes_count=Count("vote", distinct=True),
+        comments_count=Count("comment", distinct=True)
     )
 
     for initiative in initiatives:
@@ -215,7 +236,7 @@ def my_initiatives(request):
 
     return render(
         request,
-        "initiatives/my_initiatives.html",
+        "initiatives/hidden_initiatives.html",
         {
             "initiatives": initiatives
         }
@@ -281,4 +302,96 @@ def delete_initiative(request, pk):
         request,
         "initiatives/delete_initiative.html",
         {"initiative": initiative}
+    )
+
+
+@login_required
+def edit_initiative(request, pk):
+    initiative = get_object_or_404(
+        Initiative,
+        pk=pk,
+        author=request.user
+    )
+
+    if initiative.status == "published":
+        return redirect("my_initiatives")
+
+    if request.method == "POST":
+        initiative.title = request.POST.get("title")
+        initiative.description = request.POST.get("description")
+        initiative.location = request.POST.get("location")
+
+        category_id = request.POST.get("category")
+        initiative.category = get_object_or_404(
+            Category,
+            id=category_id
+        )
+
+        initiative.status = "moderation"
+        initiative.save()
+
+        return redirect("my_initiatives")
+
+    categories = Category.objects.all()
+
+    return render(
+        request,
+        "initiatives/edit_initiative.html",
+        {
+            "initiative": initiative,
+            "categories": categories
+        }
+    )
+
+@login_required
+def hide_initiative(request, pk):
+    initiative = get_object_or_404(
+        Initiative,
+        pk=pk,
+        author=request.user
+    )
+
+    if request.method == "POST":
+        initiative.is_hidden = True
+        initiative.save()
+
+    return redirect("my_initiatives")
+
+
+@login_required
+def unhide_initiative(request, pk):
+    initiative = get_object_or_404(
+        Initiative,
+        pk=pk,
+        author=request.user
+    )
+
+    if request.method == "POST":
+        initiative.is_hidden = False
+        initiative.save()
+
+    return redirect("hidden_initiatives")
+
+
+@login_required
+def my_initiatives(request):
+    initiatives = Initiative.objects.filter(
+        author=request.user,
+        is_hidden=False
+    ).annotate(
+        votes_count=Count("vote", distinct=True),
+        comments_count=Count("comment", distinct=True)
+    )
+
+    for initiative in initiatives:
+        initiative.image = Attachment.objects.filter(
+            initiative=initiative
+        ).first()
+
+    return render(
+        request,
+        "initiatives/my_initiatives.html",
+        {
+            "initiatives": initiatives
+        }
     )

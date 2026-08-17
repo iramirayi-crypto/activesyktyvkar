@@ -14,4 +14,25 @@ urlpatterns = [
     views.delete_initiative,
     name="delete_initiative"
 ),
+path(
+    "edit/<int:pk>/",
+    views.edit_initiative,
+    name="edit_initiative"
+),
+path(
+    "hide/<int:pk>/",
+    views.hide_initiative,
+    name="hide_initiative"
+),
+path(
+    "hidden/",
+    views.hidden_initiatives,
+    name="hidden_initiatives"
+),
+
+path(
+    "unhide/<int:pk>/",
+    views.unhide_initiative,
+    name="unhide_initiative"
+),
 ]

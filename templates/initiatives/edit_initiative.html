@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+       
+<div class="container mt-5">
+
+                 <a href="javascript:history.back()"
+   class="text-decoration-none text-dark">
+    ←
+</a>
+    <h2 class="mb-4">Редактирование инициативы</h2>
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <!-- Название -->
+        <div class="mb-3">
+            <label for="title" class="form-label">
+                Название инициативы
+            </label>
+
+            <input
+                type="text"
+                class="form-control"
+                id="title"
+                name="title"
+                value="{{ initiative.title }}"
+                required
+            >
+        </div>
+
+        <!-- Описание -->
+        <div class="mb-3">
+            <label for="description" class="form-label">
+                Описание инициативы
+            </label>
+
+            <textarea
+                class="form-control"
+                id="description"
+                name="description"
+                rows="6"
+                required
+            >{{ initiative.description }}</textarea>
+        </div>
+
+        <!-- Место реализации -->
+        <div class="mb-3">
+            <label for="location" class="form-label">
+                Место реализации
+            </label>
+
+            <input
+                type="text"
+                class="form-control"
+                id="location"
+                name="location"
+                value="{{ initiative.location }}"
+                placeholder="Например: район Орбита, ул. Лыткина, 31"
+                required
+            >
+
+            <div class="form-text">
+                Укажите район, улицу, парк, двор или другое конкретное место.
+            </div>
+        </div>
+
+        <!-- Категория -->
+        <div class="mb-3">
+            <label for="category" class="form-label">
+                Категория
+            </label>
+
+            <select
+                class="form-select"
+                id="category"
+                name="category"
+                required
+            >
+                {% for category in categories %}
+                    <option
+                        value="{{ category.id }}"
+                        {% if category.id == initiative.category.id %}
+                            selected
+                        {% endif %}
+                    >
+                        {{ category.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- Изображение -->
+        <div class="mb-4">
+            <label for="file" class="form-label">
+                Новое изображение
+            </label>
+
+            <input
+                type="file"
+                class="form-control"
+                id="file"
+                name="file"
+                accept="image/*"
+            >
+
+            <div class="form-text">
+                Если новое изображение не выбрать, текущее изображение останется.
+            </div>
+        </div>
+
+        <!-- Кнопки -->
+        <button type="submit" class="btn btn-primary">
+            Сохранить изменения
+        </button>
+
+        <a
+            href="{% url 'my_initiatives' %}"
+            class="btn btn-secondary ms-2"
+        >
+            Отмена
+        </a>
+
+    </form>
+
+</div>
+
+{% endblock %}

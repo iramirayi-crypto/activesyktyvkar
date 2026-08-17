@@ -112,6 +112,16 @@
                             {{ initiative.created_at|date:"d.m.Y" }}
                         </p>
 
+         <div class="text-muted mb-3">
+    <i class="bi bi-hand-thumbs-up"></i>
+    {{ initiative.votes_count }}
+
+    <span class="ms-3">
+        <i class="bi bi-chat"></i>
+        {{ initiative.comments_count }}
+    </span>
+</div>
+
                         <a
                             href="{% url 'initiative_detail' initiative.pk %}"
                             class="btn btn-outline-primary mt-auto align-self-start"
