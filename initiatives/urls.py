@@ -35,4 +35,16 @@ path(
     views.unhide_initiative,
     name="unhide_initiative"
 ),
+path("moderation/", views.moderation, name="moderation"),
+path(
+    "<int:initiative_id>/publish/",
+    views.publish_initiative,
+    name="publish_initiative"
+),
+
+path(
+    "<int:initiative_id>/reject/",
+    views.reject_initiative,
+    name="reject_initiative"
+),
 ]

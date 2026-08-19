@@ -54,6 +54,11 @@ class Initiative(models.Model):
         default="moderation"
     )
 
+    moderator_comment = models.TextField(
+    "Комментарий модератора",
+    blank=True,
+    null=True
+    )
     created_at = models.DateTimeField(
         "Дата создания",
         auto_now_add=True

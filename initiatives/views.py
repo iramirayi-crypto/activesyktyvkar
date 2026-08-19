@@ -352,11 +352,13 @@ def hide_initiative(request, pk):
     )
 
     if request.method == "POST":
-        initiative.is_hidden = True
+        initiative.is_hidden = not initiative.is_hidden
         initiative.save()
 
-    return redirect("my_initiatives")
+    if initiative.is_hidden:
+        return redirect("my_initiatives")
 
+    return redirect("hidden_initiatives")
 
 @login_required
 def unhide_initiative(request, pk):
@@ -395,3 +397,99 @@ def my_initiatives(request):
             "initiatives": initiatives
         }
     )
+
+@login_required
+@user_passes_test(is_moderator)
+def moderation(request):
+    initiatives = Initiative.objects.filter(
+        status="moderation"
+    ).order_by("-created_at")
+
+    for initiative in initiatives:
+        initiative.image = Attachment.objects.filter(
+            initiative=initiative
+        ).first()
+
+        initiative.votes_count = Vote.objects.filter(
+            initiative=initiative
+        ).count()
+
+        initiative.comments_count = Comment.objects.filter(
+            initiative=initiative
+        ).count()
+
+    return render(
+        request,
+        "initiatives/moderation.html",
+        {
+            "initiatives": initiatives,
+        },
+    )
+
+@login_required
+@user_passes_test(is_moderator)
+def moderation(request):
+    initiatives = Initiative.objects.filter(
+        status="moderation"
+    ).order_by("-created_at")
+
+    for initiative in initiatives:
+        initiative.image = Attachment.objects.filter(
+            initiative=initiative
+        ).first()
+
+        initiative.votes_count = Vote.objects.filter(
+            initiative=initiative
+        ).count()
+
+        initiative.comments_count = Comment.objects.filter(
+            initiative=initiative
+        ).count()
+
+    return render(
+        request,
+        "initiatives/moderation.html",
+        {
+            "initiatives": initiatives,
+        },
+    )
+
+
+@login_required
+@user_passes_test(is_moderator)
+def publish_initiative(request, initiative_id):
+    initiative = get_object_or_404(
+        Initiative,
+        id=initiative_id,
+        status="moderation"
+    )
+
+    if request.method == "POST":
+        initiative.status = "published"
+        initiative.moderator_comment = ""
+        initiative.save()
+
+    return redirect("moderation")
+
+
+@login_required
+@user_passes_test(is_moderator)
+def reject_initiative(request, initiative_id):
+    initiative = get_object_or_404(
+        Initiative,
+        id=initiative_id,
+        status="moderation"
+    )
+
+    if request.method == "POST":
+        moderator_comment = request.POST.get(
+            "moderator_comment",
+            ""
+        ).strip()
+
+        if moderator_comment:
+            initiative.status = "rejected"
+            initiative.moderator_comment = moderator_comment
+            initiative.save()
+
+    return redirect("moderation")

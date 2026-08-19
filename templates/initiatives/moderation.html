@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container mt-5">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <h2>Модерация инициатив</h2>
+
+        <a href="{% url 'initiative_list' %}"
+           class="btn btn-outline-primary">
+            ← Назад
+        </a>
+
+    </div>
+
+
+    {% if initiatives %}
+
+        <div class="row g-4">
+
+            {% for initiative in initiatives %}
+
+                <div class="col-md-6 col-lg-4">
+
+                    <div class="card h-100 shadow-sm">
+
+                        {% if initiative.image %}
+                            <img
+                                src="{{ initiative.image.file.url }}"
+                                class="card-img-top"
+                                alt="{{ initiative.title }}"
+                                style="height: 250px; object-fit: cover;"
+                            >
+                        {% endif %}
+
+                        <div class="card-body d-flex flex-column">
+
+                            <h3 class="card-title">
+                                {{ initiative.title }}
+                            </h3>
+
+                            <p class="card-text">
+                                {{ initiative.description|truncatewords:25 }}
+                            </p>
+
+                            <p class="mb-2">
+                                <strong>Категория:</strong>
+                                {{ initiative.category.name }}
+                            </p>
+
+                            <p class="mb-2">
+                                <strong>Место:</strong>
+                                {{ initiative.location|default:"Не указано" }}
+                            </p>
+
+                            <p class="mb-2">
+                                <strong>Автор:</strong>
+                                {{ initiative.author.username }}
+                            </p>
+
+                            <p class="mb-3">
+                                <strong>Дата:</strong>
+                                {{ initiative.created_at|date:"d.m.Y" }}
+                            </p>
+
+                            <div class="mt-auto">
+
+                                <a href="{% url 'initiative_detail' initiative.id %}"
+                                   class="btn btn-primary w-100">
+                                    Подробнее
+                                </a>
+
+                                <div class="d-flex gap-2 mt-3">
+
+                                    <form method="post"
+                                          action="{% url 'publish_initiative' initiative.id %}"
+                                          class="flex-grow-1">
+
+                                        {% csrf_token %}
+
+                                        <button type="submit"
+                                                class="btn btn-primary w-100">
+                                            Опубликовать
+                                        </button>
+
+                                    </form>
+
+                                    <button type="button"
+                                            class="btn btn-primary flex-grow-1"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#rejectModal{{ initiative.id }}">
+                                        Отклонить
+                                    </button>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Окно отклонения -->
+
+                <div class="modal fade"
+                     id="rejectModal{{ initiative.id }}"
+                     tabindex="-1"
+                     aria-labelledby="rejectModalLabel{{ initiative.id }}"
+                     aria-hidden="true">
+
+                    <div class="modal-dialog">
+
+                        <div class="modal-content">
+
+                            <div class="modal-header">
+
+                                <h5 class="modal-title"
+                                    id="rejectModalLabel{{ initiative.id }}">
+                                    Отклонение инициативы
+                                </h5>
+
+                                <button type="button"
+                                        class="btn-close"
+                                        data-bs-dismiss="modal"
+                                        aria-label="Закрыть">
+                                </button>
+
+                            </div>
+
+
+                            <form method="post"
+                                  action="{% url 'reject_initiative' initiative.id %}">
+
+                                {% csrf_token %}
+
+                                <div class="modal-body">
+
+                                    <label class="form-label">
+                                        Причина отклонения
+                                    </label>
+
+                                    <textarea
+                                        name="moderator_comment"
+                                        class="form-control"
+                                        rows="5"
+                                        required
+                                        placeholder="Укажите причину отклонения"></textarea>
+
+                                </div>
+
+
+                                <div class="modal-footer">
+
+                                    <button type="button"
+                                            class="btn btn-secondary"
+                                            data-bs-dismiss="modal">
+                                        Отмена
+                                    </button>
+
+                                    <button type="submit"
+                                            class="btn btn-primary">
+                                        Отклонить
+                                    </button>
+
+                                </div>
+
+                            </form>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+    {% else %}
+
+        <div class="alert alert-info">
+            Сейчас нет инициатив, ожидающих модерации.
+        </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

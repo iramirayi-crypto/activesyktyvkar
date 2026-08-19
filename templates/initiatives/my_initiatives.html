@@ -9,51 +9,61 @@
 <div class="container mt-5">
 
     <a href="{% url 'initiative_list' %}"
-       class="text-decoration-none text-secondary">
-        ←
+       class="btn btn-outline-primary">
+        ← Назад
     </a>
 
- <div class="d-flex justify-content-between align-items-center mb-4">
 
-    <h2>Мои инициативы</h2>
+    <!-- Заголовок и кнопки -->
 
-    <div class="d-flex gap-2">
+    <div class="d-flex justify-content-between align-items-center mb-4">
 
-        <a
-            href="{% url 'hidden_initiatives' %}"
-            class="btn btn-outline-secondary"
-        >
-            Скрытые
-        </a>
+        <h2>Мои инициативы</h2>
 
-        <a
-            href="{% url 'create_initiative' %}"
-            class="btn btn-primary"
-        >
-            Создать инициативу
-        </a>
+        <div class="d-flex gap-2">
+
+            <a
+                href="{% url 'hidden_initiatives' %}"
+                class="btn btn-outline-secondary"
+            >
+                Скрытые
+            </a>
+
+            <a
+                href="{% url 'create_initiative' %}"
+                class="btn btn-primary"
+            >
+                Создать инициативу
+            </a>
+
+        </div>
 
     </div>
 
-    </div> 
-    
+
     {% if initiatives %}
 
         <div class="row g-4">
 
             {% for initiative in initiatives %}
 
+                <!-- Карточка инициативы -->
+
                 <div class="col-md-4">
+
                     <div class="card h-100">
 
                         {% if initiative.image %}
+
                             <img
                                 src="{{ initiative.image.file.url }}"
                                 class="card-img-top"
                                 alt="{{ initiative.title }}"
                                 style="height: 315px; object-fit: cover;"
                             >
+
                         {% endif %}
+
 
                         <div class="card-body d-flex flex-column">
 
@@ -61,34 +71,44 @@
                                 {{ initiative.title }}
                             </h3>
 
+
                             <p class="card-text">
                                 {{ initiative.description }}
                             </p>
 
+
                             {% if initiative.location %}
+
                                 <p>
                                     <strong>Место реализации:</strong>
                                     {{ initiative.location }}
                                 </p>
+
                             {% endif %}
+
 
                             <p>
                                 <strong>Категория:</strong>
                                 {{ initiative.category.name }}
                             </p>
 
+
                             <p>
                                 <strong>Статус:</strong>
                                 {{ initiative.get_status_display }}
                             </p>
+
 
                             <p>
                                 <strong>Дата:</strong>
                                 {{ initiative.created_at|date:"d.m.Y" }}
                             </p>
 
+
                             <!-- Лайки и комментарии только для опубликованных -->
+
                             {% if initiative.status == "published" %}
+
                                 <div class="text-muted mb-3">
 
                                     <i class="bi bi-hand-thumbs-up"></i>
@@ -100,11 +120,17 @@
                                     </span>
 
                                 </div>
+
                             {% endif %}
+
+
+                            <!-- Кнопки -->
 
                             <div class="mt-auto pt-3">
 
+
                                 <!-- Подробнее + Редактировать -->
+
                                 <div class="d-flex gap-2">
 
                                     <a
@@ -114,74 +140,176 @@
                                         Подробнее
                                     </a>
 
+
                                     {% if initiative.status == "moderation" or initiative.status == "rejected" %}
+
                                         <a
                                             href="{% url 'edit_initiative' initiative.pk %}"
                                             class="btn btn-primary"
                                         >
                                             Редактировать
                                         </a>
+
                                     {% endif %}
 
                                 </div>
 
+
                                 <!-- Удалить + Скрыть -->
+
                                 <div class="d-flex gap-2 mt-2">
 
-                                    {% if initiative.status == "moderation" or initiative.status == "rejected" %}
-                                        <form
-                                            method="post"
-                                            action="{% url 'delete_initiative' initiative.pk %}"
-                                        >
-                                            {% csrf_token %}
 
-                                            <button
-                                                type="submit"
-                                                class="btn btn-primary"
-                                                onclick="return confirm('Удалить инициативу?');"
-                                            >
-                                                Удалить
-                                            </button>
-                                        </form>
+                                    {% if initiative.status == "moderation" or initiative.status == "rejected" %}
+
+                                        <button
+                                            type="button"
+                                            class="btn btn-primary"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#deleteModal{{ initiative.id }}"
+                                        >
+                                            Удалить
+                                        </button>
+
                                     {% endif %}
+
 
                                     <form
                                         method="post"
                                         action="{% url 'hide_initiative' initiative.pk %}"
                                     >
+
                                         {% csrf_token %}
 
                                         <button
                                             type="submit"
-                                               class="btn btn-outline-secondary"
+                                            class="btn btn-outline-secondary"
                                         >
                                             Скрыть
                                         </button>
+
                                     </form>
+
 
                                 </div>
 
                             </div>
 
                         </div>
+
                     </div>
+
                 </div>
+
+
+                <!-- ================================= -->
+                <!-- Окно подтверждения удаления -->
+                <!-- ================================= -->
+
+                <div
+                    class="modal fade"
+                    id="deleteModal{{ initiative.id }}"
+                    tabindex="-1"
+                    aria-labelledby="deleteModalLabel{{ initiative.id }}"
+                    aria-hidden="true"
+                >
+
+                    <div class="modal-dialog">
+
+                        <div class="modal-content">
+
+
+                            <!-- Заголовок окна -->
+
+                            <div class="modal-header">
+
+                                <h5
+                                    class="modal-title"
+                                    id="deleteModalLabel{{ initiative.id }}"
+                                >
+                                    Удаление инициативы
+                                </h5>
+
+
+                                <button
+                                    type="button"
+                                    class="btn-close"
+                                    data-bs-dismiss="modal"
+                                    aria-label="Закрыть"
+                                >
+                                </button>
+
+                            </div>
+
+
+                            <!-- Текст -->
+
+                            <div class="modal-body">
+
+                                Вы уверены, что хотите удалить эту инициативу?
+
+                            </div>
+
+
+                            <!-- Кнопки -->
+
+                            <div class="modal-footer">
+
+                                <button
+                                    type="button"
+                                    class="btn btn-secondary"
+                                    data-bs-dismiss="modal"
+                                >
+                                    Отмена
+                                </button>
+
+
+                                <form
+                                    method="post"
+                                    action="{% url 'delete_initiative' initiative.pk %}"
+                                >
+
+                                    {% csrf_token %}
+
+                                    <button
+                                        type="submit"
+                                        class="btn btn-primary"
+                                    >
+                                        Удалить
+                                    </button>
+
+                                </form>
+
+                            </div>
+
+
+                        </div>
+
+                    </div>
+
+                </div>
+
 
             {% endfor %}
 
         </div>
 
+
     {% else %}
+
 
         <div class="text-center py-5">
 
-            <h4>У вас пока нет инициатив</h4>
+            <h4>
+                У вас пока нет инициатив
+            </h4>
 
             <p class="text-muted">
                 Создайте свою первую инициативу.
             </p>
 
         </div>
+
 
     {% endif %}
 
