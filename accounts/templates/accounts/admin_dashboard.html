@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+
+{% block title %}
+Администрирование
+{% endblock %}
+
+{% block content %}
+
+<div class="container mt-5">
+
+     <a
+            href="{% url 'initiative_list' %}"
+            class="btn btn-outline-primary"
+        >
+            ← Назад
+        </a>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <h2>Администрирование</h2>
+    </div>
+
+
+    <div class="row g-4">
+
+        <!-- Пользователи -->
+
+        <div class="col-md-6 col-lg-3">
+
+            <div class="card shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <h5 class="card-title">
+                        Пользователи
+                    </h5>
+
+                    <h2 class="mb-0">
+                        {{ users_count }}
+                    </h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Инициативы -->
+
+        <div class="col-md-6 col-lg-3">
+
+            <div class="card shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <h5 class="card-title">
+                        Инициативы
+                    </h5>
+
+                    <h2 class="mb-0">
+                        {{ initiatives_count }}
+                    </h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Опубликованные -->
+
+        <div class="col-md-6 col-lg-3">
+
+            <div class="card shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <h5 class="card-title">
+                        Опубликовано
+                    </h5>
+
+                    <h2 class="mb-0">
+                        {{ published_count }}
+                    </h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- На модерации -->
+
+        <div class="col-md-6 col-lg-3">
+
+            <div class="card shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <h5 class="card-title">
+                        На модерации
+                    </h5>
+
+                    <h2 class="mb-0">
+                        {{ moderation_count }}
+                    </h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Отклонённые -->
+
+    <div class="row g-4 mt-1">
+
+        <div class="col-md-6">
+
+            <div class="card shadow-sm">
+
+                <div class="card-body">
+
+                    <h5 class="card-title">
+                        Отклонено
+                    </h5>
+
+                    <h2 class="mb-0">
+                        {{ rejected_count }}
+                    </h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Журнал аудита -->
+
+    <div class="mt-5">
+
+        <a
+            href="#"
+            class="btn btn-primary"
+        >
+            Журнал аудита
+        </a>
+
+    </div>
+
+</div>
+
+{% endblock %}

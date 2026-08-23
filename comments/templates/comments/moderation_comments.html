@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+
+{% block title %}
+Модерация комментариев
+{% endblock %}
+
+{% block content %}
+
+<div class="container mt-5">
+
+   <a
+    href="{% url 'moderation' %}"
+    class="btn btn-outline-primary"
+>
+    ← Назад
+</a>
+
+    <!-- Заголовок и кнопка назад -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <h2>
+            Модерация комментариев
+        </h2>
+
+    </div>
+
+
+    {% if comments %}
+
+        <div class="row g-4">
+
+            {% for comment in comments %}
+
+                <div class="col-12">
+
+                    <div class="card shadow-sm">
+
+                        <div class="card-body">
+
+                            <!-- Информация о комментарии -->
+
+                            <div class="mb-3">
+
+                                <strong>
+                                    Автор:
+                                </strong>
+
+                                {{ comment.author.username }}
+
+                            </div>
+
+
+                            <div class="mb-3">
+
+                                <strong>
+                                    Инициатива:
+                                </strong>
+
+                                <a
+                                    href="{% url 'initiative_detail' comment.initiative.pk %}"
+                                    class="text-decoration-none"
+                                >
+                                    {{ comment.initiative.title }}
+                                </a>
+
+                            </div>
+
+
+                            <div class="mb-3">
+
+                                <strong>
+                                    Дата:
+                                </strong>
+
+                                {{ comment.created_at|date:"d.m.Y H:i" }}
+
+                            </div>
+
+
+                            <!-- Текст комментария -->
+
+                            <div class="mb-3">
+
+                                <strong>
+                                    Комментарий:
+                                </strong>
+
+                                <p class="mt-2 mb-0">
+                                    {{ comment.text }}
+                                </p>
+
+                            </div>
+
+
+                            <!-- Кнопка удаления -->
+
+                            <button
+                                type="button"
+                                class="btn btn-primary"
+                                data-bs-toggle="modal"
+                                data-bs-target="#deleteCommentModal{{ comment.id }}"
+                            >
+                                Удалить
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Окно подтверждения удаления -->
+
+                <div
+                    class="modal fade"
+                    id="deleteCommentModal{{ comment.id }}"
+                    tabindex="-1"
+                    aria-labelledby="deleteCommentModalLabel{{ comment.id }}"
+                    aria-hidden="true"
+                >
+
+                    <div class="modal-dialog">
+
+                        <div class="modal-content">
+
+                            <div class="modal-header">
+
+                                <h5
+                                    class="modal-title"
+                                    id="deleteCommentModalLabel{{ comment.id }}"
+                                >
+                                    Удаление комментария
+                                </h5>
+
+                                <button
+                                    type="button"
+                                    class="btn-close"
+                                    data-bs-dismiss="modal"
+                                    aria-label="Закрыть"
+                                ></button>
+
+                            </div>
+
+
+                            <div class="modal-body">
+
+                                Вы уверены, что хотите удалить этот комментарий?
+
+                            </div>
+
+
+                            <div class="modal-footer">
+
+                                <button
+                                    type="button"
+                                    class="btn btn-secondary"
+                                    data-bs-dismiss="modal"
+                                >
+                                    Отмена
+                                </button>
+
+
+                                <form
+                                    method="post"
+                                    action="{% url 'delete_comment' comment.pk %}"
+                                >
+
+                                    {% csrf_token %}
+
+                                    <button
+                                        type="submit"
+                                        class="btn btn-primary"
+                                    >
+                                        Удалить
+                                    </button>
+
+                                </form>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+    {% else %}
+
+        <div class="alert alert-info">
+
+            Сейчас нет комментариев.
+
+        </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

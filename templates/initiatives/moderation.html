@@ -3,17 +3,29 @@
 {% block content %}
 
 <div class="container mt-5">
+    <a href="{% url 'initiative_list' %}"
+       class="btn btn-outline-primary">
+        ← Назад
+    </a>
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
 
-        <h2>Модерация инициатив</h2>
+  <div class="d-flex align-items-center gap-3 mb-4">
 
-        <a href="{% url 'initiative_list' %}"
-           class="btn btn-outline-primary">
-            ← Назад
-        </a>
+    <h2 class="mb-0">
+        Модерация инициатив
+    </h2>
 
-    </div>
+  <a
+    href="{% url 'moderation_comments' %}"
+    class="btn btn-primary"
+>
+    Комментарии
+</a>
+
+</div>
+
+</div>
+
 
 
     {% if initiatives %}

@@ -244,35 +244,39 @@
 
         </div>
 
-        <p class="mt-2">
-            {{ comment.text }}
-        </p>
+      <p class="mt-2">
+    {{ comment.text }}
+</p>
 
-        {% if user == comment.author or user.is_superuser %}
+{% if user == comment.author or is_moderator %}
 
-            <div class="d-flex gap-2">
+    <div class="d-flex gap-2">
 
-                <a href="{% url 'edit_comment' comment.id %}"
-                   class="btn btn-outline-primary btn-sm rounded-pill">
-                    Редактировать
-                </a>
-
-                <form method="post"
-                      action="{% url 'delete_comment' comment.id %}">
-
-                    {% csrf_token %}
-
-                    <button
-                        type="submit"
-                        class="btn btn-outline-danger btn-sm rounded-pill">
-                        Удалить
-                    </button>
-
-                </form>
-
-            </div>
-
+        {% if user == comment.author %}
+            <a href="{% url 'edit_comment' comment.id %}"
+               class="btn btn-outline-primary btn-sm rounded-pill">
+                Редактировать
+            </a>
         {% endif %}
+
+        <form method="post"
+              action="{% url 'delete_comment' comment.id %}">
+
+            {% csrf_token %}
+
+            <button
+                type="submit"
+                class="btn btn-outline-danger btn-sm rounded-pill">
+                Удалить
+            </button>
+
+        </form>
+
+    </div>
+
+{% endif %}
+
+
 
     </div>
 

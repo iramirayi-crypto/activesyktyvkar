@@ -25,6 +25,18 @@
             Активный Сыктывкар
         </a>
 
+        <a
+    href="{% url 'notifications' %}"
+    class="btn btn-outline-light position-relative"
+>
+    <i class="bi bi-bell"></i>
+
+    {% if request.user.is_authenticated %}
+        {% with unread_count=request.user.notifications.filter %}
+        {% endwith %}
+    {% endif %}
+</a>
+
         <div class="navbar-nav ms-auto d-flex flex-row align-items-center gap-2">
 
             <a class="btn" href="{% url 'initiative_list' %}">

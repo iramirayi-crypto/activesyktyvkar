@@ -5,7 +5,8 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from .models import Initiative, Vote, Category
 from comments.models import Comment
 from attachments.models import Attachment
-
+from accounts.models import AuditLog
+from accounts.models import Notification
 
 # Список опубликованных инициатив
 def initiative_list(request):
@@ -67,6 +68,7 @@ def is_moderator(user):
         )
     )
 # Страница одной инициативы
+# Страница одной инициативы
 def initiative_detail(request, pk):
 
     initiative = get_object_or_404(
@@ -75,9 +77,16 @@ def initiative_detail(request, pk):
     )
 
     # Неопубликованную инициативу может смотреть
-    # только её автор
+    # только её автор или модератор
     if initiative.status != "published":
-        if not request.user.is_authenticated or initiative.author != request.user:
+
+        if not request.user.is_authenticated:
+            return redirect("initiative_list")
+
+        if (
+            initiative.author != request.user
+            and not is_moderator(request.user)
+        ):
             return redirect("initiative_list")
 
     # Изображения доступны всегда
@@ -97,6 +106,7 @@ def initiative_detail(request, pk):
         ).count()
 
         if request.user.is_authenticated:
+
             user_voted = Vote.objects.filter(
                 initiative=initiative,
                 user=request.user
@@ -115,6 +125,12 @@ def initiative_detail(request, pk):
             "votes_count": votes_count,
             "user_voted": user_voted,
             "comments": comments,
+
+            # Передаём в шаблон, является ли пользователь модератором
+            "is_moderator": (
+                request.user.is_authenticated
+                and is_moderator(request.user)
+            ),
         }
     )
 
@@ -458,6 +474,7 @@ def moderation(request):
 @login_required
 @user_passes_test(is_moderator)
 def publish_initiative(request, initiative_id):
+
     initiative = get_object_or_404(
         Initiative,
         id=initiative_id,
@@ -465,16 +482,22 @@ def publish_initiative(request, initiative_id):
     )
 
     if request.method == "POST":
+
         initiative.status = "published"
         initiative.moderator_comment = ""
         initiative.save()
 
-    return redirect("moderation")
+        AuditLog.objects.create(
+            user=request.user,
+            action=f'Опубликована инициатива «{initiative.title}»'
+        )
 
+    return redirect("moderation")
 
 @login_required
 @user_passes_test(is_moderator)
 def reject_initiative(request, initiative_id):
+
     initiative = get_object_or_404(
         Initiative,
         id=initiative_id,
@@ -482,14 +505,29 @@ def reject_initiative(request, initiative_id):
     )
 
     if request.method == "POST":
+
         moderator_comment = request.POST.get(
             "moderator_comment",
             ""
         ).strip()
 
         if moderator_comment:
+
             initiative.status = "rejected"
             initiative.moderator_comment = moderator_comment
             initiative.save()
+
+            Notification.objects.create(
+                user=initiative.author,
+                message=(
+                    f'Ваша инициатива «{initiative.title}» '
+                    f'отклонена. Причина: {moderator_comment}'
+                )
+            )
+
+            AuditLog.objects.create(
+                user=request.user,
+                action=f'Отклонена инициатива «{initiative.title}»'
+            )
 
     return redirect("moderation")

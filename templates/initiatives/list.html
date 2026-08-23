@@ -23,6 +23,16 @@
                     </a>
                 {% endif %}
 
+                    {% if user.is_superuser %}
+
+    <a
+        href="{% url 'admin_dashboard' %}"
+        class="btn btn-primary"
+    >
+        Администрирование
+    </a>
+
+{% endif %}
             </div>
         {% endif %}
         
