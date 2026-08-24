@@ -18,6 +18,17 @@ class Profile(models.Model):
         null=True
     )
 
+    personal_data_consent = models.BooleanField(
+        "Согласие на обработку персональных данных",
+        default=False
+    )
+
+    personal_data_consent_at = models.DateTimeField(
+        "Дата согласия",
+        blank=True,
+        null=True
+    )
+
     def __str__(self):
         return self.user.username
 

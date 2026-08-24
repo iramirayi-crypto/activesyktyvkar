@@ -18,11 +18,50 @@
                 <form method="post">
                     {% csrf_token %}
 
-                    {{ form.as_p }}
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {% for error in form.non_field_errors %}
+                                <div>{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
 
-                    <button class="btn btn-primary w-100">
+                    <div class="mb-3">
+                        <label for="id_username" class="form-label">Имя пользователя</label>
+                        <input id="id_username"
+                               type="text"
+                               name="username"
+                               value="{{ form.username.value|default:'' }}"
+                               class="form-control {% if form.username.errors %}is-invalid{% endif %}"
+                               autocomplete="username"
+                               required>
+                        {% for error in form.username.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="id_password" class="form-label">Пароль</label>
+                        <input id="id_password"
+                               type="password"
+                               name="password"
+                               class="form-control {% if form.password.errors %}is-invalid{% endif %}"
+                               autocomplete="current-password"
+                               required>
+                        {% for error in form.password.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">
                         Войти
                     </button>
+
+                    <div class="text-center mt-3">
+                        <a href="{% url 'password_reset' %}">
+                            Забыли пароль?
+                        </a>
+                    </div>
 
                 </form>
 

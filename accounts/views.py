@@ -1,10 +1,12 @@
 from datetime import timedelta
 
 from django.shortcuts import render, redirect
+from django.contrib import messages
 from django.contrib.auth import login, logout
-from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
+from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.db import transaction
 from django.db.models import Count
 from django.db.models.functions import TruncDate
 from django.utils import timezone
@@ -13,42 +15,32 @@ from django.utils.dateparse import parse_date
 from comments.models import Comment
 from initiatives.models import Initiative, Vote
 
-from .forms import ProfileForm, AvatarForm
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import render
-
-from .models import AuditLog, Notification
+from .forms import AvatarForm, ProfileForm, RegistrationForm
+from .models import AuditLog, Notification, Profile
 
 # Регистрация
 def register(request):
 
     if request.method == "POST":
-        form = UserCreationForm(request.POST)
+        form = RegistrationForm(request.POST)
     else:
-        form = UserCreationForm()
-
-    form.fields["username"].help_text = ""
-    form.fields["password1"].help_text = ""
-    form.fields["password2"].help_text = ""
-
-    form.fields["username"].widget.attrs.update({
-        "class": "form-control",
-        "placeholder": "Введите имя пользователя"
-    })
-
-    form.fields["password1"].widget.attrs.update({
-        "class": "form-control",
-        "placeholder": "Введите пароль"
-    })
-
-    form.fields["password2"].widget.attrs.update({
-        "class": "form-control",
-        "placeholder": "Повторите пароль"
-    })
+        form = RegistrationForm()
 
     if request.method == "POST" and form.is_valid():
-        user = form.save()
+        with transaction.atomic():
+            user = form.save()
+            profile, _ = Profile.objects.get_or_create(user=user)
+            profile.personal_data_consent = True
+            profile.personal_data_consent_at = timezone.now()
+            profile.save(
+                update_fields=[
+                    "personal_data_consent",
+                    "personal_data_consent_at",
+                ]
+            )
+
         login(request, user)
+        messages.success(request, "Регистрация успешно завершена.")
         return redirect("home")
 
     return render(
@@ -126,6 +118,7 @@ def edit_profile(request):
 
         if form.is_valid():
             form.save()
+            messages.success(request, "Профиль сохранён.")
             return redirect("profile")
 
     else:
@@ -174,7 +167,22 @@ def edit_avatar(request):
         }
     )
 
-    # Административная страница
+
+# Согласие на обработку персональных данных
+def personal_data_consent(request):
+    return render(
+        request,
+        "accounts/personal_data_consent.html"
+    )
+
+
+# Политика обработки персональных данных
+def privacy_policy(request):
+    return render(
+        request,
+        "accounts/privacy_policy.html"
+    )
+
 # Административная страница
 @login_required
 def admin_dashboard(request):

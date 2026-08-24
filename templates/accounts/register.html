@@ -6,61 +6,106 @@
 
 <div class="row justify-content-center mt-4">
     <div class="col-md-6">
-
         <div class="card shadow">
-
             <div class="card-header bg-primary text-white">
-    <h3 class="mb-0">Регистрация</h3>
-</div>
+                <h3 class="mb-0">Регистрация</h3>
+            </div>
 
             <div class="card-body">
-
                 <form method="post">
                     {% csrf_token %}
 
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {% for error in form.non_field_errors %}
+                                <div>{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
                     <div class="mb-3">
-                        <label class="form-label">Имя пользователя</label>
-                        {{ form.username }}
-                        {% if form.username.errors %}
-                            <div class="text-danger">
-                                {{ form.username.errors }}
-                            </div>
+                        <label for="id_username" class="form-label">Имя пользователя</label>
+                        <input id="id_username"
+                               type="text"
+                               name="username"
+                               value="{{ form.username.value|default:'' }}"
+                               class="form-control {% if form.username.errors %}is-invalid{% endif %}"
+                               autocomplete="username"
+                               required>
+                        {% for error in form.username.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="id_email" class="form-label">Email</label>
+                        <input id="id_email"
+                               type="email"
+                               name="email"
+                               value="{{ form.email.value|default:'' }}"
+                               class="form-control {% if form.email.errors %}is-invalid{% endif %}"
+                               autocomplete="email"
+                               required>
+                        {% for error in form.email.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="id_password1" class="form-label">Пароль</label>
+                        <input id="id_password1"
+                               type="password"
+                               name="password1"
+                               class="form-control {% if form.password1.errors %}is-invalid{% endif %}"
+                               autocomplete="new-password"
+                               required>
+                        {% for error in form.password1.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                        {% if form.password1.help_text %}
+                            <div class="form-text">{{ form.password1.help_text|safe }}</div>
                         {% endif %}
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Пароль</label>
-                        {{ form.password1 }}
-                        <small class="text-muted">
-                            Минимум 8 символов.
-                        </small>
-                        {% if form.password1.errors %}
-                            <div class="text-danger">
-                                {{ form.password1.errors }}
-                            </div>
-                        {% endif %}
+                        <label for="id_password2" class="form-label">Подтвердите пароль</label>
+                        <input id="id_password2"
+                               type="password"
+                               name="password2"
+                               class="form-control {% if form.password2.errors %}is-invalid{% endif %}"
+                               autocomplete="new-password"
+                               required>
+                        {% for error in form.password2.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
                     </div>
 
-                    <div class="mb-3">
-                        <label class="form-label">Подтвердите пароль</label>
-                        {{ form.password2 }}
-                        {% if form.password2.errors %}
-                            <div class="text-danger">
-                                {{ form.password2.errors }}
-                            </div>
-                        {% endif %}
+                    <div class="form-check mb-3">
+                        <input id="id_personal_data_consent"
+                               type="checkbox"
+                               name="personal_data_consent"
+                               class="form-check-input {% if form.personal_data_consent.errors %}is-invalid{% endif %}"
+                               {% if form.personal_data_consent.value %}checked{% endif %}
+                               required>
+                        <label for="id_personal_data_consent" class="form-check-label">
+                            Я даю
+                            <a href="{% url 'personal_data_consent' %}"
+                               target="_blank"
+                               rel="noopener">
+                                согласие на обработку персональных данных
+                            </a>
+                        </label>
+                        {% for error in form.personal_data_consent.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
                     </div>
 
                     <button type="submit" class="btn btn-primary w-100">
-    Зарегистрироваться
-</button>
-
+                        Зарегистрироваться
+                    </button>
                 </form>
-
             </div>
-
         </div>
-
     </div>
 </div>
 

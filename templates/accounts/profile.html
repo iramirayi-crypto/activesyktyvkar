@@ -22,7 +22,7 @@
             {% else %}
 
                 <img
-                   src="{% static 'css/images/default_avatar.jpg' %}"
+                    src="{% static 'images/default_avatar.jpg' %}"
                     class="rounded-circle mb-4"
                     width="180"
                     height="180"
@@ -71,7 +71,15 @@
 
                 Редактировать профиль
 
-            </a>   
+            </a>
+
+            <a
+                href="{% url 'password_change' %}"
+                class="btn btn-outline-primary">
+
+                Изменить пароль
+
+            </a>
 
             </div>
 

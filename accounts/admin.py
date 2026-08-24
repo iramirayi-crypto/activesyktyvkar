@@ -3,7 +3,15 @@ from django.contrib import admin
 from .models import AuditLog, Notification, Profile
 
 
-admin.site.register(Profile)
+@admin.register(Profile)
+class ProfileAdmin(admin.ModelAdmin):
+    list_display = (
+        "user",
+        "personal_data_consent",
+        "personal_data_consent_at",
+    )
+    list_filter = ("personal_data_consent",)
+    search_fields = ("user__username", "user__email")
 
 
 @admin.register(AuditLog)
