@@ -366,3 +366,10 @@ def notifications(request):
             "notifications": notifications
         }
     )
+
+# Правила публикации комментариев
+def comment_rules(request):
+    return render(
+        request,
+        "accounts/comment_rules.html"
+    )

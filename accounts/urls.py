@@ -117,10 +117,14 @@ urlpatterns = [
         views.audit_log,
         name="audit_log"
     ),
- path(
+    path(
     "notifications/",
     views.notifications,
     name="notifications"
-),
-
+    ),
+    path(
+    "comment-rules/",
+    views.comment_rules,
+    name="comment_rules"
+    ),
 ]
