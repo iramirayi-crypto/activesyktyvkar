@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}
+Журнал аудита
+{% endblock %}
+
+{% block content %}
+
+<div class="container mt-5">
+    <a href="{% url 'admin_dashboard' %}"
+       class="btn btn-outline-primary mb-4">
+        ← Назад
+    </a>
+
+    <h2 class="mb-4">Журнал аудита</h2>
+
+    <form method="get" class="card card-body mb-4">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label for="audit-user" class="form-label">Пользователь</label>
+                <input
+                    id="audit-user"
+                    type="text"
+                    name="user"
+                    value="{{ user_query }}"
+                    class="form-control"
+                    placeholder="Имя пользователя"
+                >
+            </div>
+
+            <div class="col-md-3">
+                <label for="audit-action" class="form-label">Действие</label>
+                <input
+                    id="audit-action"
+                    type="text"
+                    name="action"
+                    value="{{ action_query }}"
+                    class="form-control"
+                    placeholder="Текст действия"
+                >
+            </div>
+
+            <div class="col-md-2">
+                <label for="audit-date-from" class="form-label">Дата с</label>
+                <input
+                    id="audit-date-from"
+                    type="date"
+                    name="date_from"
+                    value="{{ date_from }}"
+                    class="form-control"
+                >
+            </div>
+
+            <div class="col-md-2">
+                <label for="audit-date-to" class="form-label">Дата по</label>
+                <input
+                    id="audit-date-to"
+                    type="date"
+                    name="date_to"
+                    value="{{ date_to }}"
+                    class="form-control"
+                >
+            </div>
+
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Найти</button>
+                <a href="{% url 'audit_log' %}" class="btn btn-outline-secondary">Сбросить</a>
+            </div>
+        </div>
+    </form>
+
+    {% if logs %}
+        <div class="table-responsive">
+            <table class="table table-striped align-middle">
+                <thead>
+                    <tr>
+                        <th>Дата и время</th>
+                        <th>Пользователь</th>
+                        <th>Действие</th>
+                        <th>IP-адрес</th>
+                        <th>User-Agent</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in logs %}
+                        <tr>
+                            <td>{{ log.created_at|date:"d.m.Y H:i:s" }}</td>
+                            <td>
+                                {% if log.user %}
+                                    {{ log.user.username }}
+                                {% else %}
+                                    <span class="text-muted">Удалённый пользователь</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ log.action }}</td>
+                            <td>{{ log.ip_address|default:"—" }}</td>
+                            <td title="{{ log.user_agent }}">
+                                {{ log.user_agent|default:"—"|truncatechars:80 }}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="alert alert-info">Записи не найдены.</div>
+    {% endif %}
+</div>
+
+{% endblock %}

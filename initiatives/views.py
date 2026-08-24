@@ -1,6 +1,9 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.db.models import Q, Count 
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.core.paginator import Paginator
+from django.views.decorators.http import require_POST
 
 from .models import Initiative, Vote, Category
 from comments.models import Comment
@@ -11,8 +14,9 @@ from accounts.models import Notification
 # Список опубликованных инициатив
 def initiative_list(request):
 
-    query = request.GET.get("q", "")
+    query = request.GET.get("q", "").strip()
     category = request.GET.get("category", "")
+    sort = request.GET.get("sort", "newest")
 
     # Только опубликованные инициативы
     initiatives = Initiative.objects.filter(
@@ -28,13 +32,26 @@ def initiative_list(request):
         )
 
     # Фильтр по категории
-    if category:
+    if category.isdigit():
         initiatives = initiatives.filter(
             category__id=category
         )
+    elif category:
+        category = ""
+
+    sort_options = {
+        "newest": "-created_at",
+        "oldest": "created_at",
+    }
+    if sort not in sort_options:
+        sort = "newest"
+
+    initiatives = initiatives.order_by(sort_options[sort])
+    paginator = Paginator(initiatives, 6)
+    page_obj = paginator.get_page(request.GET.get("page"))
 
     # Изображение, количество голосов и комментариев
-    for initiative in initiatives:
+    for initiative in page_obj:
         initiative.image = Attachment.objects.filter(
             initiative=initiative
         ).first()
@@ -51,9 +68,11 @@ def initiative_list(request):
         request,
         "initiatives/list.html",
         {
-            "initiatives": initiatives,
+            "initiatives": page_obj,
+            "page_obj": page_obj,
             "query": query,
             "category": category,
+            "sort": sort,
             "categories": Category.objects.all(),
         },
     )
@@ -171,32 +190,6 @@ def vote_initiative(request, pk):
     )
 
 
-# Удаление комментария
-def delete_comment(request, pk):
-
-    # Если пользователь не вошел
-    if not request.user.is_authenticated:
-        return redirect("login")
-
-    # Получаем комментарий
-    comment = get_object_or_404(Comment, pk=pk)
-
-    # Проверяем права
-    if request.user == comment.author or request.user.is_superuser:
-
-        initiative_id = comment.initiative.id
-        comment.delete()
-
-        return redirect(
-            "initiative_detail",
-            pk=initiative_id
-        )
-
-    return redirect(
-        "initiative_detail",
-        pk=comment.initiative.id
-    )
-
 # Редактирование комментария
 def edit_comment(request, pk):
 
@@ -216,8 +209,20 @@ def edit_comment(request, pk):
 
     # Если отправлена форма
     if request.method == "POST":
+        text = request.POST.get("text", "").strip()
 
-        comment.text = request.POST.get("text")
+        if not text:
+            messages.error(request, "Комментарий не может быть пустым.")
+            return redirect("edit_comment", pk=pk)
+
+        if len(text) > 1000:
+            messages.error(
+                request,
+                "Комментарий не должен превышать 1000 символов."
+            )
+            return redirect("edit_comment", pk=pk)
+
+        comment.text = text
         comment.save()
 
         return redirect(
@@ -290,6 +295,13 @@ def create_initiative(request):
                 file=uploaded_file
             )
 
+        AuditLog.objects.create(
+            user=request.user,
+            action=f'Создана инициатива «{initiative.title}»',
+            ip_address=request.META.get("REMOTE_ADDR"),
+            user_agent=request.META.get("HTTP_USER_AGENT", "")
+        )
+
         return redirect("my_initiatives")
 
     categories = Category.objects.all()
@@ -333,6 +345,8 @@ def edit_initiative(request, pk):
         return redirect("my_initiatives")
 
     if request.method == "POST":
+        was_rejected = initiative.status == "rejected"
+
         initiative.title = request.POST.get("title")
         initiative.description = request.POST.get("description")
         initiative.location = request.POST.get("location")
@@ -344,7 +358,16 @@ def edit_initiative(request, pk):
         )
 
         initiative.status = "moderation"
+        if was_rejected:
+            initiative.moderator_comment = None
         initiative.save()
+
+        AuditLog.objects.create(
+            user=request.user,
+            action=f'Отредактирована инициатива «{initiative.title}»',
+            ip_address=request.META.get("REMOTE_ADDR"),
+            user_agent=request.META.get("HTTP_USER_AGENT", "")
+        )
 
         return redirect("my_initiatives")
 
@@ -417,11 +440,36 @@ def my_initiatives(request):
 @login_required
 @user_passes_test(is_moderator)
 def moderation(request):
+    moderation_query = request.GET.get("moderation_q", "").strip()
+    published_query = request.GET.get("published_q", "").strip()
+
     initiatives = Initiative.objects.filter(
         status="moderation"
     ).order_by("-created_at")
 
-    for initiative in initiatives:
+    published_initiatives = Initiative.objects.filter(
+        status="published"
+    ).order_by("-created_at")
+
+    if moderation_query:
+        initiatives = initiatives.filter(
+            Q(title__icontains=moderation_query) |
+            Q(description__icontains=moderation_query) |
+            Q(author__username__icontains=moderation_query) |
+            Q(location__icontains=moderation_query) |
+            Q(category__name__icontains=moderation_query)
+        )
+
+    if published_query:
+        published_initiatives = published_initiatives.filter(
+            Q(title__icontains=published_query) |
+            Q(description__icontains=published_query) |
+            Q(author__username__icontains=published_query) |
+            Q(location__icontains=published_query) |
+            Q(category__name__icontains=published_query)
+        )
+
+    for initiative in list(initiatives) + list(published_initiatives):
         initiative.image = Attachment.objects.filter(
             initiative=initiative
         ).first()
@@ -439,40 +487,16 @@ def moderation(request):
         "initiatives/moderation.html",
         {
             "initiatives": initiatives,
-        },
-    )
-
-@login_required
-@user_passes_test(is_moderator)
-def moderation(request):
-    initiatives = Initiative.objects.filter(
-        status="moderation"
-    ).order_by("-created_at")
-
-    for initiative in initiatives:
-        initiative.image = Attachment.objects.filter(
-            initiative=initiative
-        ).first()
-
-        initiative.votes_count = Vote.objects.filter(
-            initiative=initiative
-        ).count()
-
-        initiative.comments_count = Comment.objects.filter(
-            initiative=initiative
-        ).count()
-
-    return render(
-        request,
-        "initiatives/moderation.html",
-        {
-            "initiatives": initiatives,
+            "published_initiatives": published_initiatives,
+            "moderation_query": moderation_query,
+            "published_query": published_query,
         },
     )
 
 
 @login_required
 @user_passes_test(is_moderator)
+@require_POST
 def publish_initiative(request, initiative_id):
 
     initiative = get_object_or_404(
@@ -481,21 +505,29 @@ def publish_initiative(request, initiative_id):
         status="moderation"
     )
 
-    if request.method == "POST":
+    initiative.status = "published"
+    initiative.moderator_comment = ""
+    initiative.save()
 
-        initiative.status = "published"
-        initiative.moderator_comment = ""
-        initiative.save()
-
-        AuditLog.objects.create(
-            user=request.user,
-            action=f'Опубликована инициатива «{initiative.title}»'
+    Notification.objects.create(
+        user=initiative.author,
+        message=(
+            f'Ваша инициатива «{initiative.title}» опубликована.'
         )
+    )
+
+    AuditLog.objects.create(
+        user=request.user,
+        action=f'Опубликована инициатива «{initiative.title}»',
+        ip_address=request.META.get("REMOTE_ADDR"),
+        user_agent=request.META.get("HTTP_USER_AGENT", "")
+    )
 
     return redirect("moderation")
 
 @login_required
 @user_passes_test(is_moderator)
+@require_POST
 def reject_initiative(request, initiative_id):
 
     initiative = get_object_or_404(
@@ -504,30 +536,55 @@ def reject_initiative(request, initiative_id):
         status="moderation"
     )
 
-    if request.method == "POST":
+    moderator_comment = request.POST.get(
+        "moderator_comment",
+        ""
+    ).strip()
 
-        moderator_comment = request.POST.get(
-            "moderator_comment",
-            ""
-        ).strip()
+    if not moderator_comment:
+        messages.error(request, "Укажите причину отклонения.")
+        return redirect("moderation")
 
-        if moderator_comment:
+    initiative.status = "rejected"
+    initiative.moderator_comment = moderator_comment
+    initiative.save()
 
-            initiative.status = "rejected"
-            initiative.moderator_comment = moderator_comment
-            initiative.save()
+    Notification.objects.create(
+        user=initiative.author,
+        message=(
+            f'Ваша инициатива «{initiative.title}» '
+            f'отклонена. Причина: {moderator_comment}'
+        )
+    )
 
-            Notification.objects.create(
-                user=initiative.author,
-                message=(
-                    f'Ваша инициатива «{initiative.title}» '
-                    f'отклонена. Причина: {moderator_comment}'
-                )
-            )
+    AuditLog.objects.create(
+        user=request.user,
+        action=f'Отклонена инициатива «{initiative.title}»',
+        ip_address=request.META.get("REMOTE_ADDR"),
+        user_agent=request.META.get("HTTP_USER_AGENT", "")
+    )
 
-            AuditLog.objects.create(
-                user=request.user,
-                action=f'Отклонена инициатива «{initiative.title}»'
-            )
+    return redirect("moderation")
+
+
+@login_required
+@user_passes_test(is_moderator)
+@require_POST
+def return_to_moderation(request, initiative_id):
+    initiative = get_object_or_404(
+        Initiative,
+        id=initiative_id,
+        status="published"
+    )
+
+    initiative.status = "moderation"
+    initiative.save()
+
+    AuditLog.objects.create(
+        user=request.user,
+        action=f'Инициатива «{initiative.title}» возвращена на модерацию',
+        ip_address=request.META.get("REMOTE_ADDR"),
+        user_agent=request.META.get("HTTP_USER_AGENT", "")
+    )
 
     return redirect("moderation")

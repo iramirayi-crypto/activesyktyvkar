@@ -75,6 +75,20 @@
 
         </select>
 
+        <select
+            name="sort"
+            class="form-select"
+            style="max-width:190px;">
+
+            <option value="newest" {% if sort == "newest" %}selected{% endif %}>
+                Сначала новые
+            </option>
+            <option value="oldest" {% if sort == "oldest" %}selected{% endif %}>
+                Сначала старые
+            </option>
+
+        </select>
+
         <button
             type="submit"
             class="btn btn-primary px-4">
@@ -165,6 +179,39 @@
         Пока нет опубликованных инициатив.
     </div>
 
+{% endif %}
+
+{% if page_obj.paginator.num_pages > 1 %}
+    <nav aria-label="Навигация по страницам">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link"
+                       href="?q={{ query|urlencode }}&category={{ category|urlencode }}&sort={{ sort|urlencode }}&page={{ page_obj.previous_page_number }}">
+                        Предыдущая
+                    </a>
+                </li>
+            {% endif %}
+
+            {% for page_number in page_obj.paginator.page_range %}
+                <li class="page-item {% if page_obj.number == page_number %}active{% endif %}">
+                    <a class="page-link"
+                       href="?q={{ query|urlencode }}&category={{ category|urlencode }}&sort={{ sort|urlencode }}&page={{ page_number }}">
+                        {{ page_number }}
+                    </a>
+                </li>
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link"
+                       href="?q={{ query|urlencode }}&category={{ category|urlencode }}&sort={{ sort|urlencode }}&page={{ page_obj.next_page_number }}">
+                        Следующая
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
 {% endif %}
 
 </div>

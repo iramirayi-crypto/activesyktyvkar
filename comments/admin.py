@@ -17,4 +17,8 @@ class CommentAdmin(admin.ModelAdmin):
 
     search_fields = (
         "text",
+        "author__username",
+        "initiative__title",
     )
+
+    ordering = ("-created_at",)

@@ -13,9 +13,17 @@ class CategoryAdmin(admin.ModelAdmin):
 
 @admin.register(Initiative)
 class InitiativeAdmin(admin.ModelAdmin):
-    list_display = ("id", "title", "category", "status", "created_at")
-    list_filter = ("status", "category")
-    search_fields = ("title",)
+    list_display = (
+        "id",
+        "title",
+        "author",
+        "category",
+        "status",
+        "created_at",
+    )
+    list_filter = ("status", "category", "created_at")
+    search_fields = ("title", "description", "author__username")
+    ordering = ("-created_at",)
 
 
 @admin.register(Vote)
@@ -27,3 +35,5 @@ class VoteAdmin(admin.ModelAdmin):
         "created_at",
     )
     list_filter = ("created_at",)
+    search_fields = ("initiative__title", "user__username")
+    ordering = ("-created_at",)

@@ -39,6 +39,18 @@ class AuditLog(models.Model):
         verbose_name="Действие"
     )
 
+    ip_address = models.GenericIPAddressField(
+        "IP-адрес",
+        blank=True,
+        null=True
+    )
+
+    user_agent = models.TextField(
+        "User-Agent",
+        blank=True,
+        default=""
+    )
+
     # Дата и время действия
     created_at = models.DateTimeField(
         auto_now_add=True,

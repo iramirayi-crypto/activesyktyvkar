@@ -259,18 +259,13 @@
             </a>
         {% endif %}
 
-        <form method="post"
-              action="{% url 'delete_comment' comment.id %}">
-
-            {% csrf_token %}
-
-            <button
-                type="submit"
-                class="btn btn-outline-danger btn-sm rounded-pill">
-                Удалить
-            </button>
-
-        </form>
+        <button
+            type="button"
+            class="btn btn-outline-danger btn-sm rounded-pill"
+            data-bs-toggle="modal"
+            data-bs-target="#deleteCommentModal{{ comment.id }}">
+            Удалить
+        </button>
 
     </div>
 
@@ -280,6 +275,44 @@
 
     </div>
 
+</div>
+
+<div class="modal fade"
+     id="deleteCommentModal{{ comment.id }}"
+     tabindex="-1"
+     aria-labelledby="deleteCommentModalLabel{{ comment.id }}"
+     aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"
+                    id="deleteCommentModalLabel{{ comment.id }}">
+                    Удалить комментарий?
+                </h5>
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal"
+                        aria-label="Закрыть"></button>
+            </div>
+            <div class="modal-body">
+                Вы действительно хотите удалить этот комментарий?
+            </div>
+            <div class="modal-footer">
+                <button type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal">
+                    Отмена
+                </button>
+                <form method="post"
+                      action="{% url 'delete_comment' comment.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">
+                        Удалить
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
 
 
@@ -298,6 +331,7 @@
 
         <!-- Добавить комментарий -->
 
+    {% if initiative.status == "published" %}
     {% if user.is_authenticated %}
 
         <h3 class="mb-4">
@@ -317,6 +351,7 @@
                     name="text"
                     class="form-control rounded-4"
                     rows="5"
+                    maxlength="1000"
                     placeholder="Введите комментарий..."
                     required></textarea>
 
@@ -346,6 +381,7 @@
 
         </div>
 
+    {% endif %}
     {% endif %}
 
     <div class="mt-5">

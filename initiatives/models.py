@@ -73,6 +73,16 @@ class Initiative(models.Model):
         verbose_name = "Инициатива"
         verbose_name_plural = "Инициативы"
         ordering = ["-created_at"]
+        indexes = [
+            models.Index(
+                fields=["status"],
+                name="initiative_status_idx"
+            ),
+            models.Index(
+                fields=["created_at"],
+                name="initiative_created_idx"
+            ),
+        ]
 
     def __str__(self):
         return self.title
@@ -102,4 +112,4 @@ class Vote(models.Model):
         unique_together = ("initiative", "user")
 
     def __str__(self):
-        return f"{self.user.username} → {self.initiative.title}"     
+        return f"{self.user.username} → {self.initiative.title}"

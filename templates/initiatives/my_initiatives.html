@@ -98,6 +98,13 @@
                                 {{ initiative.get_status_display }}
                             </p>
 
+                            {% if initiative.status == "rejected" and initiative.moderator_comment %}
+                                <div class="alert alert-danger">
+                                    <strong>Причина отклонения:</strong>
+                                    {{ initiative.moderator_comment }}
+                                </div>
+                            {% endif %}
+
 
                             <p>
                                 <strong>Дата:</strong>

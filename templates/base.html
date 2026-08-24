@@ -31,9 +31,10 @@
 >
     <i class="bi bi-bell"></i>
 
-    {% if request.user.is_authenticated %}
-        {% with unread_count=request.user.notifications.filter %}
-        {% endwith %}
+    {% if unread_notifications_count %}
+        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+            {{ unread_notifications_count }}
+        </span>
     {% endif %}
 </a>
 
@@ -76,6 +77,14 @@
 </nav>
 
 <div class="container mt-4">
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-{{ message.tags|default:'info' }}{% endif %}" role="alert">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
     {% block content %}
     {% endblock %}
 </div>

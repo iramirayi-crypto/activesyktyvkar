@@ -121,7 +121,7 @@
 
     <div class="row g-4 mt-1">
 
-        <div class="col-md-6">
+        <div class="col-md-6 col-lg-4">
 
             <div class="card shadow-sm">
 
@@ -141,22 +141,230 @@
 
         </div>
 
+        <div class="col-md-6 col-lg-4">
+
+            <div class="card shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <h5 class="card-title">
+                        Голоса
+                    </h5>
+
+                    <h2 class="mb-0">
+                        {{ votes_count }}
+                    </h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-md-6 col-lg-4">
+
+            <div class="card shadow-sm h-100">
+
+                <div class="card-body">
+
+                    <h5 class="card-title">
+                        Комментарии
+                    </h5>
+
+                    <h2 class="mb-0">
+                        {{ comments_count }}
+                    </h2>
+
+                </div>
+
+            </div>
+
+        </div>
+
     </div>
 
 
-    <!-- Журнал аудита -->
+    <div class="row g-4 mt-1">
+
+        <div class="col-md-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        Новые пользователи за текущий месяц
+                    </h5>
+                    <h2 class="mb-0">{{ new_users_month_count }}</h2>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        Новые инициативы за текущий месяц
+                    </h5>
+                    <h2 class="mb-0">{{ new_initiatives_month_count }}</h2>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- Административная навигация -->
 
     <div class="mt-5">
 
-        <a
-            href="#"
-            class="btn btn-primary"
-        >
-            Журнал аудита
-        </a>
+        {% if user.is_superuser %}
+            <h3 class="mb-3">Управление</h3>
+
+            <div class="d-flex flex-wrap gap-2">
+                <a href="{% url 'admin:auth_user_changelist' %}"
+                   class="btn btn-primary">
+                    Пользователи
+                </a>
+                <a href="{% url 'admin:initiatives_category_changelist' %}"
+                   class="btn btn-primary">
+                    Категории
+                </a>
+                <a href="{% url 'admin:initiatives_initiative_changelist' %}"
+                   class="btn btn-primary">
+                    Инициативы
+                </a>
+                <a href="{% url 'admin:comments_comment_changelist' %}"
+                   class="btn btn-primary">
+                    Комментарии
+                </a>
+                <a href="{% url 'moderation' %}"
+                   class="btn btn-primary">
+                    Модерация
+                </a>
+                <a href="{% url 'audit_log' %}"
+                   class="btn btn-primary">
+                    Журнал аудита
+                </a>
+                <a href="{% url 'admin:index' %}"
+                   class="btn btn-outline-primary">
+                    Django Admin
+                </a>
+            </div>
+        {% endif %}
 
     </div>
 
+
+    <!-- Графики -->
+
+    <h3 class="mt-5 mb-4">Статистика</h3>
+
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Инициативы по статусам</h5>
+                    <div style="height:320px;">
+                        <canvas id="statusChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Созданные инициативы по дням</h5>
+                    <p class="text-muted">Последние 14 дней</p>
+                    <div style="height:280px;">
+                        <canvas id="initiativesChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Регистрации пользователей по дням</h5>
+                    <p class="text-muted">Последние 14 дней</p>
+                    <div style="height:280px;">
+                        <canvas id="usersChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
+
+{{ status_chart_data|json_script:"status-chart-data" }}
+{{ initiatives_chart_data|json_script:"initiatives-chart-data" }}
+{{ users_chart_data|json_script:"users-chart-data" }}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
+<script>
+    const statusChartData = JSON.parse(
+        document.getElementById("status-chart-data").textContent
+    );
+    const initiativesChartData = JSON.parse(
+        document.getElementById("initiatives-chart-data").textContent
+    );
+    const usersChartData = JSON.parse(
+        document.getElementById("users-chart-data").textContent
+    );
+
+    new Chart(document.getElementById("statusChart"), {
+        type: "doughnut",
+        data: {
+            labels: statusChartData.labels,
+            datasets: [{
+                data: statusChartData.values,
+                backgroundColor: ["#198754", "#0d6efd", "#dc3545"]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
+
+    function createDailyChart(elementId, chartData, label, color) {
+        new Chart(document.getElementById(elementId), {
+            type: "line",
+            data: {
+                labels: chartData.labels,
+                datasets: [{
+                    label: label,
+                    data: chartData.values,
+                    borderColor: color,
+                    backgroundColor: color,
+                    tension: 0.2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { precision: 0 }
+                    }
+                }
+            }
+        });
+    }
+
+    createDailyChart(
+        "initiativesChart",
+        initiativesChartData,
+        "Инициативы",
+        "#0d6efd"
+    );
+    createDailyChart(
+        "usersChart",
+        usersChartData,
+        "Пользователи",
+        "#6f42c1"
+    );
+</script>
 
 {% endblock %}

@@ -45,6 +45,11 @@ urlpatterns = [
         views.admin_dashboard,
         name="admin_dashboard"
     ),
+    path(
+        "audit-log/",
+        views.audit_log,
+        name="audit_log"
+    ),
  path(
     "notifications/",
     views.notifications,

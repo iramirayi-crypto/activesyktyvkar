@@ -1,34 +1,38 @@
 from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
+from django.views.decorators.http import require_POST
 
 from initiatives.models import Initiative
-from .models import Comment, CommentDeletion
-
-
-def is_moderator(user):
-    return (
-        user.is_superuser
-        or user.groups.filter(name="Модераторы").exists()
-    )
+from initiatives.views import is_moderator
+from accounts.models import AuditLog
+from .models import Comment
 
 
 @login_required
+@require_POST
 def add_comment(request, pk):
-    if request.method == "POST":
+    initiative = get_object_or_404(
+        Initiative,
+        pk=pk,
+        status="published"
+    )
 
-        initiative = get_object_or_404(
-            Initiative,
-            pk=pk
+    text = request.POST.get("text", "").strip()
+
+    if len(text) > 1000:
+        messages.error(
+            request,
+            "Комментарий не должен превышать 1000 символов."
         )
+        return redirect("initiative_detail", pk=pk)
 
-        text = request.POST.get("text", "").strip()
-
-        if text:
-            Comment.objects.create(
-                initiative=initiative,
-                author=request.user,
-                text=text
-            )
+    if text:
+        Comment.objects.create(
+            initiative=initiative,
+            author=request.user,
+            text=text
+        )
 
     return redirect(
         "initiative_detail",
@@ -54,6 +58,7 @@ def moderation_comments(request):
 
 
 @login_required
+@require_POST
 def delete_comment(request, pk):
 
     comment = get_object_or_404(
@@ -72,24 +77,18 @@ def delete_comment(request, pk):
             pk=initiative_id
         )
 
-    if request.method == "POST":
+    if is_moderator(request.user):
+        AuditLog.objects.create(
+            user=request.user,
+            action=(
+                f'Удалён комментарий к инициативе '
+                f'«{comment.initiative.title}»'
+            ),
+            ip_address=request.META.get("REMOTE_ADDR"),
+            user_agent=request.META.get("HTTP_USER_AGENT", "")
+        )
 
-        reason = request.POST.get(
-            "deletion_reason",
-            ""
-        ).strip()
-
-        if reason:
-
-            CommentDeletion.objects.create(
-                comment_author=comment.author,
-                initiative=comment.initiative,
-                comment_text=comment.text,
-                reason=reason,
-                deleted_by=request.user
-            )
-
-            comment.delete()
+    comment.delete()
 
     return redirect(
         "initiative_detail",

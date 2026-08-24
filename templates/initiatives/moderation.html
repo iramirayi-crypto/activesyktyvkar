@@ -24,6 +24,26 @@
 
 </div>
 
+<form method="get" class="mb-4">
+    <input type="hidden" name="published_q" value="{{ published_query }}">
+    <div class="input-group">
+        <input
+            type="text"
+            name="moderation_q"
+            value="{{ moderation_query }}"
+            class="form-control"
+            placeholder="Поиск в очереди модерации..."
+        >
+        <button type="submit" class="btn btn-primary">Найти</button>
+        {% if moderation_query %}
+            <a href="?published_q={{ published_query|urlencode }}"
+               class="btn btn-outline-secondary">
+                Сбросить
+            </a>
+        {% endif %}
+    </div>
+</form>
+
 </div>
 
 
@@ -199,6 +219,75 @@
             Сейчас нет инициатив, ожидающих модерации.
         </div>
 
+    {% endif %}
+
+    <h2 class="mt-5 mb-4">
+        Опубликованные инициативы
+    </h2>
+
+    <form method="get" class="mb-4">
+        <input type="hidden" name="moderation_q" value="{{ moderation_query }}">
+        <div class="input-group">
+            <input
+                type="text"
+                name="published_q"
+                value="{{ published_query }}"
+                class="form-control"
+                placeholder="Поиск среди опубликованных инициатив..."
+            >
+            <button type="submit" class="btn btn-primary">Найти</button>
+            {% if published_query %}
+                <a href="?moderation_q={{ moderation_query|urlencode }}"
+                   class="btn btn-outline-secondary">
+                    Сбросить
+                </a>
+            {% endif %}
+        </div>
+    </form>
+
+    {% if published_initiatives %}
+        <div class="row g-4">
+            {% for initiative in published_initiatives %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 shadow-sm">
+                        {% if initiative.image %}
+                            <img
+                                src="{{ initiative.image.file.url }}"
+                                class="card-img-top"
+                                alt="{{ initiative.title }}"
+                                style="height: 250px; object-fit: cover;"
+                            >
+                        {% endif %}
+
+                        <div class="card-body d-flex flex-column">
+                            <h3 class="card-title">{{ initiative.title }}</h3>
+                            <p class="card-text">
+                                {{ initiative.description|truncatewords:25 }}
+                            </p>
+                            <p><strong>Автор:</strong> {{ initiative.author.username }}</p>
+
+                            <div class="mt-auto">
+                                <a href="{% url 'initiative_detail' initiative.id %}"
+                                   class="btn btn-outline-primary w-100 mb-2">
+                                    Подробнее
+                                </a>
+                                <form method="post"
+                                      action="{% url 'return_to_moderation' initiative.id %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-primary w-100">
+                                        Вернуть на модерацию
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            Сейчас нет опубликованных инициатив.
+        </div>
     {% endif %}
 
 </div>
