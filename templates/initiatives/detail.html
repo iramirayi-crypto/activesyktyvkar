@@ -1,411 +1,298 @@
 {% extends "base.html" %}
-{% load static %}
-
-{% block title %}
-{{ initiative.title }}
+{% load static l10n %}
+{% block title %}{{ initiative.title }} — Активный Сыктывкар{% endblock %}
+{% block extra_css %}
+    {% if initiative.latitude != None and initiative.longitude != None %}
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+        crossorigin=""
+    >
+    {% endif %}
 {% endblock %}
-
 {% block content %}
+<div class="page-shell">
+    <nav aria-label="Хлебные крошки">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'home' %}">Главная</a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="{% url 'initiative_list' %}">Инициативы</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">
+                {{ initiative.title|truncatechars:45 }}
+            </li>
+        </ol>
+    </nav>
 
-<div class="container mt-4 mb-5">
-
-                <a href="javascript:history.back()"
-  class="btn btn-outline-primary">
-    ← Назад
-</a>
-
-    <!-- Заголовок -->
-    <div class="mb-4">
-
-        <h1 class="fw-bold mb-3">
-            {{ initiative.title }}
-        </h1>
-
-        <div class="d-flex flex-wrap align-items-center gap-3">
-
-            <span class="badge rounded-pill px-3 py-2"
-                  style="
-                  background:#EAF6FF;
-                  color:#0063B1;
-                  font-size:14px;">
-
-                {{ initiative.get_status_display }}
-
-            </span>
-
-            <span class="text-secondary">
-
-                {{ initiative.created_at|date:"d.m.Y" }}
-
-            </span>
-
+    <header class="mb-4">
+        <div class="d-flex flex-wrap gap-2 mb-3">
+            <span class="badge-status status-{{ initiative.status }}">{{ initiative.get_status_display }}</span>
+            <span class="category-badge">{{ initiative.category.name }}</span>
         </div>
+        <h1 class="page-title">{{ initiative.title }}</h1>
+        <div class="meta-list mt-3">
+            <span>
+                <i class="bi bi-person"></i>{{ initiative.author.username|default:"Автор удалён" }}
+            </span>
+            <span>
+                <i class="bi bi-calendar3"></i>{{ initiative.created_at|date:"d.m.Y" }}
+            </span>
+            {% if initiative.location %}
+                <span><i class="bi bi-geo-alt"></i>{{ initiative.location }}</span>
+            {% endif %}
+        </div>
+    </header>
 
-    </div>
-
-   <!-- Информация -->
-
-<div class="row mb-4">
-
-    <div class="col-md-4">
-
-        <p class="mb-2">
-            <strong>Категория:</strong><br>
-            {{ initiative.category }}
-        </p>
-
-    </div>
-
-   {% if initiative.location %}
-    <div class="col-md-4">
-
-        <p class="mb-2">
-            <strong>Место реализации:</strong><br>
-            {{ initiative.location }}
-        </p>
-
-    </div>
-{% endif %}
-
-    <div class="col-md-4">
-
-        <p class="mb-2">
-            <strong>Автор:</strong><br>
-            {{ initiative.author }}
-        </p>
-
-    </div>
-
-    </div>
-
-    <!-- Изображение -->
+    {% if initiative.status == "rejected" and initiative.moderator_comment %}
+        <section class="alert alert-danger rejection-note mb-4" aria-labelledby="rejection-title">
+            <h2 id="rejection-title" class="h5">
+                <i class="bi bi-exclamation-circle me-2"></i>Причина отклонения
+            </h2>
+            <p class="mb-0">{{ initiative.moderator_comment }}</p>
+        </section>
+    {% elif initiative.status == "moderation" %}
+        <div class="alert alert-warning">
+            <i class="bi bi-hourglass-split me-2"></i>Инициатива ожидает проверки. Голосование и обсуждение станут доступны после публикации.
+        </div>
+    {% endif %}
 
     {% if attachments %}
-
-        {% for attachment in attachments %}
-
-            <img src="{{ attachment.file.url }}"
-                 class="img-fluid rounded-4 shadow-sm mb-4 w-100"
-                 style="max-height:520px;object-fit:cover;"
-                 alt="{{ initiative.title }}">
-
-        {% endfor %}
-
+        <div class="mb-4">
+            {% for attachment in attachments %}
+                <img
+                    src="{{ attachment.file.url }}"
+                    class="initiative-hero-image {% if not forloop.first %}mt-3{% endif %}"
+                    alt="Изображение к инициативе «{{ initiative.title }}»"
+                >
+            {% endfor %}
+        </div>
     {% endif %}
 
-    <!-- Описание -->
+    <div class="detail-layout">
+        <div>
+            <section class="surface-card form-card mb-4" aria-labelledby="description-title">
+                <h2 id="description-title" class="h4 mb-3">Описание</h2>
+                <div class="detail-description">{{ initiative.description }}</div>
+            </section>
 
-    <div class="mb-5">
-
-        <h3 class="mb-3">
-
-            Описание
-
-        </h3>
-
-        <p class="fs-5 text-secondary">
-
-            {{ initiative.description }}
-
-        </p>
-
-    </div>
-
-    {% if initiative.status == "published" %}
-
-    <!-- Голоса -->
-
-    <div class="rounded-4 p-4 mb-4"
-         style="
-         background:#F2F9FF;
-         border:1px solid #D7ECFF;">
-
-        <div class="d-flex justify-content-between align-items-center">
-
-            <div>
-
-                <h5 class="mb-1">
-
-                    Поддержали инициативу
-
-                </h5>
-
-                <span class="display-6 fw-bold text-primary">
-
-                    {{ votes_count }}
-
-                </span>
-
-            </div>
-
-                        {% if user.is_authenticated %}
-
-                {% if user_voted %}
-
-    <div class="d-flex align-items-center gap-3">
-
-        <form method="post"
-              action="{% url 'vote_initiative' initiative.id %}">
-
-            {% csrf_token %}
-
-            <button type="submit"
-                    class="btn btn-outline-primary rounded-pill">
-
-                Отменить голос
-
-            </button>
-
-        </form>
-
-    </div>
-
-{% else %}
-
-                    <form method="post"
-                          action="{% url 'vote_initiative' initiative.id %}">
-
-                        {% csrf_token %}
-
-                        <button type="submit"
-                                class="btn btn-primary rounded-pill px-4">
-
-                            Поддержать инициативу
-
-                        </button>
-
-                    </form>
-
-                {% endif %}
-
-            {% else %}
-
-                <span class="text-secondary">
-
-                    Чтобы поддержать инициативу,
-                    необходимо войти в систему.
-
-                </span>
-
+            {% if initiative.latitude != None and initiative.longitude != None %}
+                <section class="surface-card form-card mb-4" aria-labelledby="initiative-map-title">
+                    <h2 id="initiative-map-title" class="h4 mb-3">Место на карте</h2>
+                    <div
+                        class="initiative-map initiative-map--readonly"
+                        data-initiative-map
+                        data-latitude="{{ initiative.latitude|unlocalize }}"
+                        data-longitude="{{ initiative.longitude|unlocalize }}"
+                        aria-label="Место реализации инициативы на карте"
+                    ></div>
+                </section>
             {% endif %}
 
+            {% if initiative.status == "published" %}
+                <section aria-labelledby="comments-title">
+                    <div class="page-header">
+                        <div>
+                            <h2 id="comments-title" class="h3 mb-0">Комментарии</h2>
+                            <a class="small" href="{% url 'comment_rules' %}">
+                                Правила публикации комментариев
+                            </a>
+                        </div>
+                    </div>
+                    {% if comments %}
+                        <div class="comment-list">
+                            {% for comment in comments %}
+                                <article class="surface-card comment-item">
+                                    {% if comment.author.profile.avatar %}
+                                        <img
+                                            src="{{ comment.author.profile.avatar.url }}"
+                                            class="comment-avatar"
+                                            alt="Аватар {{ comment.author.username }}"
+                                        >
+                                    {% else %}
+                                        <img
+                                            src="{% static 'images/default_avatar.jpg' %}"
+                                            class="comment-avatar"
+                                            alt="Аватар по умолчанию"
+                                        >
+                                    {% endif %}
+                                    <div>
+                                        <div class="comment-head">
+                                            <strong>{{ comment.author.username }}</strong>
+                                            <time
+                                                class="text-secondary small"
+                                                datetime="{{ comment.created_at|date:'c' }}"
+                                            >
+                                                {{ comment.created_at|date:"d.m.Y H:i" }}
+                                            </time>
+                                        </div>
+                                        <p class="comment-text">{{ comment.text }}</p>
+                                        {% if user == comment.author or is_moderator %}
+                                            <div class="card-actions">
+                                                {% if user == comment.author %}
+                                                    <a
+                                                        href="{% url 'edit_comment' comment.id %}"
+                                                        class="btn btn-outline-primary btn-sm"
+                                                    >
+                                                        <i class="bi bi-pencil"></i>Редактировать
+                                                    </a>
+                                                {% endif %}
+                                                <button
+                                                    type="button"
+                                                    class="btn btn-outline-danger btn-sm"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#deleteCommentModal{{ comment.id }}"
+                                                >
+                                                    <i class="bi bi-trash"></i>Удалить
+                                                </button>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </article>
+                                {% if user == comment.author or is_moderator %}
+                                    <div
+                                        class="modal fade"
+                                        id="deleteCommentModal{{ comment.id }}"
+                                        tabindex="-1"
+                                        aria-labelledby="deleteCommentModalLabel{{ comment.id }}"
+                                        aria-hidden="true"
+                                    >
+                                        <div class="modal-dialog modal-dialog-centered">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h2
+                                                        class="modal-title fs-5"
+                                                        id="deleteCommentModalLabel{{ comment.id }}"
+                                                    >
+                                                        Удалить комментарий?
+                                                    </h2>
+                                                    <button
+                                                        type="button"
+                                                        class="btn-close"
+                                                        data-bs-dismiss="modal"
+                                                        aria-label="Закрыть"
+                                                    ></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    Комментарий будет удалён без возможности восстановления.
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button
+                                                        type="button"
+                                                        class="btn btn-outline-secondary"
+                                                        data-bs-dismiss="modal"
+                                                    >
+                                                        Отмена
+                                                    </button>
+                                                    <form method="post" action="{% url 'delete_comment' comment.id %}">
+                                                        {% csrf_token %}
+                                                        <button type="submit" class="btn btn-danger">Удалить</button>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="empty-state">
+                            <div class="empty-state-icon">
+                                <i class="bi bi-chat"></i>
+                            </div>
+                            <h3 class="h5">Пока нет комментариев</h3>
+                            <p>Будьте первым, кто поделится мнением.</p>
+                        </div>
+                    {% endif %}
+
+                    {% if user.is_authenticated %}
+                        <div class="surface-card form-card mt-4">
+                            <h3 class="h5 mb-3">Добавить комментарий</h3>
+                            <form
+                                method="post"
+                                action="{% url 'add_comment' initiative.id %}"
+                                class="needs-validation"
+                                novalidate
+                            >
+                                {% csrf_token %}
+                                <label for="id_text" class="form-label">Текст комментария</label>
+                                {{ comment_form.text }}
+                                <div class="invalid-feedback">Введите комментарий до 1000 символов.</div>
+                                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mt-3">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="bi bi-send"></i>Отправить
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    {% else %}
+                        <div class="surface-card form-card mt-4">
+                            <h3 class="h5">Хотите присоединиться к обсуждению?</h3>
+                            <p class="text-secondary">Войдите в систему, чтобы оставить комментарий.</p>
+                            <a href="{% url 'login' %}" class="btn btn-outline-primary">Войти</a>
+                        </div>
+                    {% endif %}
+                </section>
+            {% endif %}
         </div>
 
+        <aside class="surface-card detail-aside">
+            <h2 class="h5">Об инициативе</h2>
+            <dl class="mb-0">
+                <dt class="text-secondary small mt-3">Категория</dt>
+                <dd>{{ initiative.category.name }}</dd>
+                <dt class="text-secondary small mt-3">Автор</dt>
+                <dd>{{ initiative.author.username|default:"Автор удалён" }}</dd>
+                {% if initiative.location %}
+                    <dt class="text-secondary small mt-3">Место реализации</dt>
+                    <dd>{{ initiative.location }}</dd>
+                {% endif %}
+            </dl>
+            {% if initiative.status == "published" %}
+                <hr>
+                <div class="vote-panel">
+                    <div>
+                        <div class="small text-secondary">Поддержали</div>
+                        <div class="vote-count">{{ votes_count }}</div>
+                    </div>
+                    {% if user.is_authenticated %}
+                        <form method="post" action="{% url 'vote_initiative' initiative.id %}">
+                            {% csrf_token %}
+                            <button
+                                type="submit"
+                                class="btn {% if user_voted %}btn-outline-primary{% else %}btn-primary{% endif %}"
+                            >
+                                {% if user_voted %}
+                                    <i class="bi bi-x-circle"></i>Отменить голос
+                                {% else %}
+                                    <i class="bi bi-hand-thumbs-up"></i>Поддержать
+                                {% endif %}
+                            </button>
+                        </form>
+                    {% else %}
+                        <a href="{% url 'login' %}" class="btn btn-primary">Войти</a>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </aside>
     </div>
-
-    <hr class="my-5">
-
-    <!-- Комментарии -->
-
-    <h3 class="mb-4">
-
-        Комментарии
-
-    </h3>
-
-    {% if comments %}
-
-        {% for comment in comments %}
-
-
-<div class="d-flex mb-4 pb-3 border-bottom">
-
-    <div class="me-3">
-
-        {% if comment.author.profile.avatar %}
-
-            <img
-                src="{{ comment.author.profile.avatar.url }}"
-                class="rounded-circle"
-                width="60"
-                height="60"
-                style="object-fit: cover;">
-
-        {% else %}
-
-            <img
-                src="{% static 'images/default_avatar.jpg' %}"
-                class="rounded-circle"
-                width="60"
-                height="60"
-                style="object-fit: cover;">
-
-        {% endif %}
-
-    </div>
-
-    <div class="flex-grow-1">
-
-        <div class="d-flex justify-content-between align-items-center">
-
-            <strong>
-                {{ comment.author.username }}
-            </strong>
-
-            <small class="text-secondary">
-                {{ comment.created_at|date:"d.m.Y H:i" }}
-            </small>
-
-        </div>
-
-      <p class="mt-2">
-    {{ comment.text }}
-</p>
-
-{% if user == comment.author or is_moderator %}
-
-    <div class="d-flex gap-2">
-
-        {% if user == comment.author %}
-            <a href="{% url 'edit_comment' comment.id %}"
-               class="btn btn-outline-primary btn-sm rounded-pill">
-                Редактировать
-            </a>
-        {% endif %}
-
-        <button
-            type="button"
-            class="btn btn-outline-danger btn-sm rounded-pill"
-            data-bs-toggle="modal"
-            data-bs-target="#deleteCommentModal{{ comment.id }}">
-            Удалить
-        </button>
-
-    </div>
-
-{% endif %}
-
-
-
-    </div>
-
-</div>
-
-<div class="modal fade"
-     id="deleteCommentModal{{ comment.id }}"
-     tabindex="-1"
-     aria-labelledby="deleteCommentModalLabel{{ comment.id }}"
-     aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title"
-                    id="deleteCommentModalLabel{{ comment.id }}">
-                    Удалить комментарий?
-                </h5>
-                <button type="button"
-                        class="btn-close"
-                        data-bs-dismiss="modal"
-                        aria-label="Закрыть"></button>
-            </div>
-            <div class="modal-body">
-                Вы действительно хотите удалить этот комментарий?
-            </div>
-            <div class="modal-footer">
-                <button type="button"
-                        class="btn btn-secondary"
-                        data-bs-dismiss="modal">
-                    Отмена
-                </button>
-                <form method="post"
-                      action="{% url 'delete_comment' comment.id %}">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-danger">
-                        Удалить
-                    </button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
-
-        {% endfor %}
-
-    {% else %}
-
-        <p class="text-secondary">
-
-            Пока нет комментариев.
-
-        </p>
-
-    {% endif %}
-
-
-        <!-- Добавить комментарий -->
-
-    {% if user.is_authenticated %}
-
-        <h3 class="mb-4">
-
-            Добавить комментарий
-
-        </h3>
-
-        <form method="post"
-              action="{% url 'add_comment' initiative.id %}">
-
-            {% csrf_token %}
-
-            <div class="mb-3">
-
-                <textarea
-                    name="text"
-                    class="form-control rounded-4"
-                    rows="5"
-                    maxlength="1000"
-                    placeholder="Введите комментарий..."
-                    required></textarea>
-
-            </div>
-
-            <button type="submit"
-        class="btn btn-primary rounded-pill px-4">
-    Отправить
-</button>
-
-<div class="mt-3">
-    <small class="text-secondary">
-        Публикуя комментарий, вы соглашаетесь с
-        <a href="{% url 'comment_rules' %}">
-            правилами публикации комментариев
-        </a>.
-    </small>
-</div>
-
-</form>
-
-    {% else %}
-
-        <div class="rounded-4 p-4"
-             style="
-             background:#F7FBFF;
-             border:1px solid #D7ECFF;">
-
-            <p class="mb-0 text-secondary">
-
-                Войдите в систему, чтобы оставить комментарий.
-
-            </p>
-
-        </div>
-
-    {% endif %}
-    {% endif %}
-
-
-    <div class="mt-5">
-
-        <a href="{% url 'initiative_list' %}"
-           class="btn btn-outline-primary rounded-pill px-4">
-
-            ← Назад к инициативам
-
+    <div class="mt-4">
+        <a href="javascript:history.back()" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i>Назад
         </a>
-
     </div>
-
 </div>
+{% endblock %}
 
+{% block extra_js %}
+    {% if initiative.latitude != None and initiative.longitude != None %}
+    <script
+        src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+        crossorigin=""
+    ></script>
+    <script src="{% static 'js/initiative_map.js' %}"></script>
+    {% endif %}
 {% endblock %}

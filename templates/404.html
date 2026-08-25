@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Страница не найдена — Активный Сыктывкар{% endblock %}
+{% block content %}
+<div class="page-shell error-page">
+    <section class="surface-card error-card" aria-labelledby="error-title">
+        <div class="error-code" aria-hidden="true">404</div>
+        <h1 id="error-title" class="h2">Страница не найдена</h1>
+        <p>Возможно, страница была перемещена, удалена или адрес указан неверно.</p>
+        <div class="error-actions">
+            <a href="{% url 'home' %}" class="btn btn-primary"><i class="bi bi-house" aria-hidden="true"></i>На главную</a>
+            <a href="{% url 'initiative_list' %}" class="btn btn-outline-primary"><i class="bi bi-lightbulb" aria-hidden="true"></i>К инициативам</a>
+        </div>
+        <form action="{% url 'initiative_list' %}" method="get" class="error-search" role="search">
+            <label for="error-initiative-search" class="visually-hidden">Поиск инициатив</label>
+            <div class="input-group">
+                <input id="error-initiative-search" type="search" name="q" class="form-control" placeholder="Поиск инициатив...">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-search" aria-hidden="true"></i>Найти
+                </button>
+            </div>
+        </form>
+    </section>
+</div>
+{% endblock %}

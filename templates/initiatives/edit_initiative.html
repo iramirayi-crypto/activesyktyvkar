@@ -1,129 +1,58 @@
 {% extends "base.html" %}
+{% load static %}
+
+{% block title %}Редактирование инициативы{% endblock %}
+
+{% block extra_css %}
+<link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
+>
+{% endblock %}
 
 {% block content %}
-
-       
-<div class="container mt-5">
-
-                 <a href="javascript:history.back()"
-  class="btn btn-outline-primary">
-    ← Назад
-</a>
-    <h2 class="mb-4">Редактирование инициативы</h2>
-
-    <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-
-        <!-- Название -->
-        <div class="mb-3">
-            <label for="title" class="form-label">
-                Название инициативы
-            </label>
-
-            <input
-                type="text"
-                class="form-control"
-                id="title"
-                name="title"
-                value="{{ initiative.title }}"
-                required
-            >
+<div class="page-shell-narrow">
+    <nav aria-label="Хлебные крошки">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'home' %}">Главная</a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="{% url 'my_initiatives' %}">Мои инициативы</a>
+            </li>
+            <li class="breadcrumb-item active">Редактирование</li>
+        </ol>
+    </nav>
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Редактирование инициативы</h1>
+            <p class="page-subtitle">
+                После сохранения инициатива будет повторно отправлена на модерацию.
+            </p>
         </div>
-
-        <!-- Описание -->
-        <div class="mb-3">
-            <label for="description" class="form-label">
-                Описание инициативы
-            </label>
-
-            <textarea
-                class="form-control"
-                id="description"
-                name="description"
-                rows="6"
-                required
-            >{{ initiative.description }}</textarea>
-        </div>
-
-        <!-- Место реализации -->
-        <div class="mb-3">
-            <label for="location" class="form-label">
-                Место реализации
-            </label>
-
-            <input
-                type="text"
-                class="form-control"
-                id="location"
-                name="location"
-                value="{{ initiative.location }}"
-                placeholder="Например: район Орбита, ул. Лыткина, 31"
-                required
-            >
-
-            <div class="form-text">
-                Укажите район, улицу, парк, двор или другое конкретное место.
+    </div>
+    <div class="surface-card form-card">
+        <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+            {% csrf_token %}
+            {% include "includes/initiative_form.html" %}
+            <div class="card-actions justify-content-end">
+                <a href="{% url 'my_initiatives' %}" class="btn btn-outline-secondary">Отмена</a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-lg"></i>Сохранить изменения
+                </button>
             </div>
-        </div>
-
-        <!-- Категория -->
-        <div class="mb-3">
-            <label for="category" class="form-label">
-                Категория
-            </label>
-
-            <select
-                class="form-select"
-                id="category"
-                name="category"
-                required
-            >
-                {% for category in categories %}
-                    <option
-                        value="{{ category.id }}"
-                        {% if category.id == initiative.category.id %}
-                            selected
-                        {% endif %}
-                    >
-                        {{ category.name }}
-                    </option>
-                {% endfor %}
-            </select>
-        </div>
-
-        <!-- Изображение -->
-        <div class="mb-4">
-            <label for="file" class="form-label">
-                Новое изображение
-            </label>
-
-            <input
-                type="file"
-                class="form-control"
-                id="file"
-                name="file"
-                accept="image/*"
-            >
-
-            <div class="form-text">
-                Если новое изображение не выбрать, текущее изображение останется.
-            </div>
-        </div>
-
-        <!-- Кнопки -->
-        <button type="submit" class="btn btn-primary">
-            Сохранить изменения
-        </button>
-
-        <a
-            href="{% url 'my_initiatives' %}"
-            class="btn btn-secondary ms-2"
-        >
-            Отмена
-        </a>
-
-    </form>
-
+        </form>
+    </div>
 </div>
+{% endblock %}
 
+{% block extra_js %}
+<script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
+></script>
+<script src="{% static 'js/initiative_map.js' %}"></script>
 {% endblock %}

@@ -1,24 +1,32 @@
-{% extends 'base.html' %}
-
-{% block title %}
-Главная
-{% endblock %}
-
+{% extends "base.html" %}
+{% block title %}Главная — Активный Сыктывкар{% endblock %}
 {% block content %}
+<div class="page-shell">
+    <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-content">
+            <div class="hero-kicker"><i class="bi bi-geo-alt-fill" aria-hidden="true"></i>Городской сервис инициатив</div>
+            <h1 id="hero-title">Ваши идеи могут сделать Сыктывкар лучше</h1>
+            <p>Предлагайте городские инициативы, поддерживайте важные идеи и участвуйте в обсуждении развития города.</p>
+            <div class="hero-actions">
+                <a href="{% url 'initiative_list' %}" class="btn btn-primary btn-lg">Перейти к инициативам <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'create_initiative' %}" class="btn btn-outline-primary btn-lg"><i class="bi bi-plus-lg" aria-hidden="true"></i>Создать инициативу</a>
+                {% else %}
+                    <a href="{% url 'how_to_use' %}" class="btn btn-outline-primary btn-lg">Как это работает</a>
+                {% endif %}
+            </div>
+        </div>
+    </section>
 
-<div class="text-center mt-5">
-
-    <h1>Добро пожаловать в систему «Активный Сыктывкар»</h1>
-
-    <p class="lead mt-3">
-        Подавайте инициативы, поддерживайте проекты и участвуйте
-        в развитии города.
-    </p>
-
-    <a href="#" class="btn btn-primary btn-lg mt-3">
-        Перейти к инициативам
-    </a>
-
+    <section class="mt-5" aria-labelledby="possibilities-title">
+        <div class="page-header">
+            <div><h2 id="possibilities-title" class="page-title">Участвуйте в жизни города</h2><p class="page-subtitle">От идеи до открытого обсуждения — всё в одном понятном сервисе.</p></div>
+        </div>
+        <div class="row g-3">
+            <div class="col-md-4"><article class="surface-card feature-card"><div class="feature-icon"><i class="bi bi-lightbulb"></i></div><h3 class="h5">Предлагайте</h3><p class="text-secondary mb-0">Опишите проблему и предложите решение для города.</p></article></div>
+            <div class="col-md-4"><article class="surface-card feature-card"><div class="feature-icon"><i class="bi bi-hand-thumbs-up"></i></div><h3 class="h5">Поддерживайте</h3><p class="text-secondary mb-0">Голосуйте за опубликованные идеи, которые считаете важными.</p></article></div>
+            <div class="col-md-4"><article class="surface-card feature-card"><div class="feature-icon"><i class="bi bi-chat-square-text"></i></div><h3 class="h5">Обсуждайте</h3><p class="text-secondary mb-0">Делитесь мнением и дополняйте идеи конструктивными комментариями.</p></article></div>
+        </div>
+    </section>
 </div>
-
 {% endblock %}

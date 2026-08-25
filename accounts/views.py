@@ -6,6 +6,8 @@ from django.contrib.auth import login, logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.contrib.auth.views import PasswordChangeView
+from django.contrib.messages.views import SuccessMessageMixin
 from django.db import transaction
 from django.db.models import Count
 from django.db.models.functions import TruncDate
@@ -18,6 +20,10 @@ from initiatives.models import Initiative, Vote
 from .forms import AvatarForm, ProfileForm, RegistrationForm
 from .models import AuditLog, Notification, Profile
 
+
+class UserPasswordChangeView(SuccessMessageMixin, PasswordChangeView):
+    success_message = "Пароль успешно изменён."
+
 # Регистрация
 def register(request):
 
@@ -29,6 +35,7 @@ def register(request):
     if request.method == "POST" and form.is_valid():
         with transaction.atomic():
             user = form.save()
+            login(request, user)
             profile, _ = Profile.objects.get_or_create(user=user)
             profile.personal_data_consent = True
             profile.personal_data_consent_at = timezone.now()
@@ -39,7 +46,6 @@ def register(request):
                 ]
             )
 
-        login(request, user)
         messages.success(request, "Регистрация успешно завершена.")
         return redirect("home")
 
@@ -151,6 +157,7 @@ def edit_avatar(request):
 
         if form.is_valid():
             form.save()
+            messages.success(request, "Фотография профиля обновлена.")
             return redirect("profile")
 
     else:

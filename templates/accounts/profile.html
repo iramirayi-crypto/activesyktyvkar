@@ -1,92 +1,63 @@
 {% extends "base.html" %}
 {% load static %}
 
+{% block title %}Мой профиль{% endblock %}
+
 {% block content %}
-
-<div class="container mt-5">
-
-    <div class="card shadow">
-
-        <div class="card-body text-center">
-
-            <!-- Аватар пользователя -->
+<div class="page-shell-narrow">
+    <nav aria-label="Хлебные крошки">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'home' %}">Главная</a>
+            </li>
+            <li class="breadcrumb-item active">Профиль</li>
+        </ol>
+    </nav>
+    <div class="surface-card profile-layout">
+        <div class="text-center">
             {% if user.profile.avatar %}
-
-                <img
-                    src="{{ user.profile.avatar.url }}"
-                    class="rounded-circle mb-4"
-                    width="180"
-                    height="180"
-                    style="object-fit: cover;">
-
+                <img src="{{ user.profile.avatar.url }}" class="profile-avatar" alt="Аватар {{ user.username }}">
             {% else %}
-
-                <img
-                    src="{% static 'images/default_avatar.jpg' %}"
-                    class="rounded-circle mb-4"
-                    width="180"
-                    height="180"
-                    style="object-fit: cover;">
-
+                <img src="{% static 'images/default_avatar.jpg' %}" class="profile-avatar" alt="Аватар по умолчанию">
             {% endif %}
-
-            <h2 class="mb-4">
-                Мой профиль
-            </h2>
-
-            <p>
-                <strong>Имя:</strong>
-                {{ user.first_name|default:"Не указано" }}
-            </p>
-
-            <p>
-                <strong>Фамилия:</strong>
-                {{ user.last_name|default:"Не указано" }}
-            </p>
-
-            <p>
-                <strong>Email:</strong>
-                {{ user.email|default:"Не указан" }}
-            </p>
-
-            <p>
-                <strong>Логин:</strong>
-                {{ user.username }}
-            </p>
-
-            <div class="mt-4">
-
-                
-                <a
-                 href="{% url 'edit_avatar' %}"
-                class="btn btn-primary">
-
-                 Изменить фотографию
-
-                </a>
-
-             <a
-                href="{% url 'edit_profile' %}"
-                class="btn btn-outline-primary">
-
-                Редактировать профиль
-
+            <a href="{% url 'edit_avatar' %}" class="btn btn-outline-primary btn-sm mt-3">
+                <i class="bi bi-camera"></i>Изменить фото
             </a>
-
-            <a
-                href="{% url 'password_change' %}"
-                class="btn btn-outline-primary">
-
-                Изменить пароль
-
-            </a>
-
-            </div>
-
         </div>
-
+        <div>
+            <div class="page-header mb-3">
+                <div>
+                    <h1 class="page-title">Мой профиль</h1>
+                    <p class="page-subtitle">{{ user.username }}</p>
+                </div>
+            </div>
+            <dl class="profile-data">
+                <div class="profile-field">
+                    <dt>Логин</dt>
+                    <dd>{{ user.username }}</dd>
+                </div>
+                <div class="profile-field">
+                    <dt>Email</dt>
+                    <dd>{{ user.email|default:"Не указан" }}</dd>
+                </div>
+                <div class="profile-field">
+                    <dt>Имя</dt>
+                    <dd>{{ user.first_name|default:"Не указано" }}</dd>
+                </div>
+                <div class="profile-field">
+                    <dt>Фамилия</dt>
+                    <dd>{{ user.last_name|default:"Не указана" }}</dd>
+                </div>
+            </dl>
+            <div class="card-actions mt-4">
+                <a href="{% url 'edit_profile' %}" class="btn btn-primary">
+                    <i class="bi bi-pencil"></i>Редактировать
+                </a>
+                <a href="{% url 'password_change' %}" class="btn btn-outline-primary">
+                    <i class="bi bi-key"></i>Изменить пароль
+                </a>
+            </div>
+        </div>
     </div>
-
 </div>
-
 {% endblock %}

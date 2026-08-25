@@ -7,6 +7,7 @@ from initiatives.models import Initiative
 from initiatives.views import is_moderator
 from accounts.models import AuditLog
 from .models import Comment
+from .forms import CommentForm
 
 
 @login_required
@@ -18,21 +19,19 @@ def add_comment(request, pk):
         status="published"
     )
 
-    text = request.POST.get("text", "").strip()
-
-    if len(text) > 1000:
+    form = CommentForm(request.POST)
+    if not form.is_valid():
         messages.error(
             request,
-            "Комментарий не должен превышать 1000 символов."
+            next(iter(form.errors.values()))[0]
         )
         return redirect("initiative_detail", pk=pk)
 
-    if text:
-        Comment.objects.create(
-            initiative=initiative,
-            author=request.user,
-            text=text
-        )
+    comment = form.save(commit=False)
+    comment.initiative = initiative
+    comment.author = request.user
+    comment.save()
+    messages.success(request, "Комментарий добавлен.")
 
     return redirect(
         "initiative_detail",
@@ -89,6 +88,7 @@ def delete_comment(request, pk):
         )
 
     comment.delete()
+    messages.success(request, "Комментарий удалён.")
 
     return redirect(
         "initiative_detail",

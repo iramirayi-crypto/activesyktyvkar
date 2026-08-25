@@ -1,369 +1,444 @@
 {% extends "base.html" %}
 
-{% block title %}
-Администрирование
-{% endblock %}
+{% block title %}Администрирование{% endblock %}
 
 {% block content %}
+<div class="page-shell">
 
-<div class="container mt-5">
+    <nav aria-label="Хлебные крошки">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'home' %}">Главная</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">
+                Администрирование
+            </li>
+        </ol>
+    </nav>
 
-     <a
-            href="{% url 'initiative_list' %}"
-            class="btn btn-outline-primary"
-        >
-            ← Назад
-        </a>
+    <div class="admin-layout">
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
-
-        <h2>Администрирование</h2>
-    </div>
-
-
-    <div class="row g-4">
-
-        <!-- Пользователи -->
-
-        <div class="col-md-6 col-lg-3">
-
-            <div class="card shadow-sm h-100">
-
-                <div class="card-body">
-
-                    <h5 class="card-title">
-                        Пользователи
-                    </h5>
-
-                    <h2 class="mb-0">
-                        {{ users_count }}
-                    </h2>
-
-                </div>
-
+        <aside class="surface-card admin-sidebar">
+            <div class="fw-bold px-2 mb-2">
+                Панель управления
             </div>
 
-        </div>
-
-
-        <!-- Инициативы -->
-
-        <div class="col-md-6 col-lg-3">
-
-            <div class="card shadow-sm h-100">
-
-                <div class="card-body">
-
-                    <h5 class="card-title">
-                        Инициативы
-                    </h5>
-
-                    <h2 class="mb-0">
-                        {{ initiatives_count }}
-                    </h2>
-
-                </div>
-
-            </div>
-
-        </div>
-
-
-        <!-- Опубликованные -->
-
-        <div class="col-md-6 col-lg-3">
-
-            <div class="card shadow-sm h-100">
-
-                <div class="card-body">
-
-                    <h5 class="card-title">
-                        Опубликовано
-                    </h5>
-
-                    <h2 class="mb-0">
-                        {{ published_count }}
-                    </h2>
-
-                </div>
-
-            </div>
-
-        </div>
-
-
-        <!-- На модерации -->
-
-        <div class="col-md-6 col-lg-3">
-
-            <div class="card shadow-sm h-100">
-
-                <div class="card-body">
-
-                    <h5 class="card-title">
-                        На модерации
-                    </h5>
-
-                    <h2 class="mb-0">
-                        {{ moderation_count }}
-                    </h2>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-
-    <!-- Отклонённые -->
-
-    <div class="row g-4 mt-1">
-
-        <div class="col-md-6 col-lg-4">
-
-            <div class="card shadow-sm">
-
-                <div class="card-body">
-
-                    <h5 class="card-title">
-                        Отклонено
-                    </h5>
-
-                    <h2 class="mb-0">
-                        {{ rejected_count }}
-                    </h2>
-
-                </div>
-
-            </div>
-
-        </div>
-
-        <div class="col-md-6 col-lg-4">
-
-            <div class="card shadow-sm h-100">
-
-                <div class="card-body">
-
-                    <h5 class="card-title">
-                        Голоса
-                    </h5>
-
-                    <h2 class="mb-0">
-                        {{ votes_count }}
-                    </h2>
-
-                </div>
-
-            </div>
-
-        </div>
-
-        <div class="col-md-6 col-lg-4">
-
-            <div class="card shadow-sm h-100">
-
-                <div class="card-body">
-
-                    <h5 class="card-title">
-                        Комментарии
-                    </h5>
-
-                    <h2 class="mb-0">
-                        {{ comments_count }}
-                    </h2>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </div>
-
-
-    <div class="row g-4 mt-1">
-
-        <div class="col-md-6">
-            <div class="card shadow-sm h-100">
-                <div class="card-body">
-                    <h5 class="card-title">
-                        Новые пользователи за текущий месяц
-                    </h5>
-                    <h2 class="mb-0">{{ new_users_month_count }}</h2>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-6">
-            <div class="card shadow-sm h-100">
-                <div class="card-body">
-                    <h5 class="card-title">
-                        Новые инициативы за текущий месяц
-                    </h5>
-                    <h2 class="mb-0">{{ new_initiatives_month_count }}</h2>
-                </div>
-            </div>
-        </div>
-
-    </div>
-
-
-    <!-- Административная навигация -->
-
-    <div class="mt-5">
-
-        {% if user.is_superuser %}
-            <h3 class="mb-3">Управление</h3>
-
-            <div class="d-flex flex-wrap gap-2">
-                <a href="{% url 'admin:auth_user_changelist' %}"
-                   class="btn btn-primary">
+            <nav aria-label="Административные разделы">
+
+                <div class="admin-nav-title">Управление</div>
+
+                <a
+                    class="admin-nav-link"
+                    href="{% url 'admin:auth_user_changelist' %}"
+                >
+                    <i class="bi bi-people"></i>
                     Пользователи
                 </a>
-                <a href="{% url 'admin:initiatives_category_changelist' %}"
-                   class="btn btn-primary">
+
+                <a
+                    class="admin-nav-link"
+                    href="{% url 'admin:initiatives_category_changelist' %}"
+                >
+                    <i class="bi bi-tags"></i>
                     Категории
                 </a>
-                <a href="{% url 'admin:initiatives_initiative_changelist' %}"
-                   class="btn btn-primary">
+
+                <a
+                    class="admin-nav-link"
+                    href="{% url 'admin:initiatives_initiative_changelist' %}"
+                >
+                    <i class="bi bi-lightbulb"></i>
                     Инициативы
                 </a>
-                <a href="{% url 'admin:comments_comment_changelist' %}"
-                   class="btn btn-primary">
+
+                <a
+                    class="admin-nav-link"
+                    href="{% url 'admin:comments_comment_changelist' %}"
+                >
+                    <i class="bi bi-chat"></i>
                     Комментарии
                 </a>
-                <a href="{% url 'moderation' %}"
-                   class="btn btn-primary">
+
+                <div class="admin-nav-title">Контроль</div>
+
+                <a
+                    class="admin-nav-link"
+                    href="{% url 'moderation' %}"
+                >
+                    <i class="bi bi-shield-check"></i>
                     Модерация
                 </a>
-                <a href="{% url 'audit_log' %}"
-                   class="btn btn-primary">
+
+                <a
+                    class="admin-nav-link"
+                    href="{% url 'audit_log' %}"
+                >
+                    <i class="bi bi-journal-text"></i>
                     Журнал аудита
                 </a>
-                <a href="{% url 'admin:index' %}"
-                   class="btn btn-outline-primary">
+
+                <a
+                    class="admin-nav-link"
+                    href="{% url 'admin:index' %}"
+                >
+                    <i class="bi bi-gear"></i>
                     Django Admin
                 </a>
-            </div>
-        {% endif %}
 
+            </nav>
+        </aside>
+
+        <main>
+
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">
+                        Администрирование
+                    </h1>
+
+                    <p class="page-subtitle">
+                        Системный обзор проекта. Ежедневная проверка контента
+                        находится в разделе «Модерация».
+                    </p>
+                </div>
+            </div>
+
+            <section
+                id="overview"
+                aria-labelledby="overview-title"
+            >
+                <h2
+                    id="overview-title"
+                    class="h4 mb-3"
+                >
+                    Обзор
+                </h2>
+
+                <div class="stats-grid">
+
+                    <article class="surface-card stat-card">
+                        <div class="stat-label">
+                            <i class="bi bi-people me-1"></i>
+                            Пользователи
+                        </div>
+                        <div class="stat-value">
+                            {{ users_count }}
+                        </div>
+                    </article>
+
+                    <article class="surface-card stat-card">
+                        <div class="stat-label">
+                            <i class="bi bi-lightbulb me-1"></i>
+                            Всего инициатив
+                        </div>
+                        <div class="stat-value">
+                            {{ initiatives_count }}
+                        </div>
+                    </article>
+
+                    <article class="surface-card stat-card">
+                        <div class="stat-label">
+                            <i class="bi bi-check-circle me-1"></i>
+                            Опубликовано
+                        </div>
+                        <div class="stat-value">
+                            {{ published_count }}
+                        </div>
+                    </article>
+
+                    <article class="surface-card stat-card">
+                        <div class="stat-label">
+                            <i class="bi bi-hourglass me-1"></i>
+                            На модерации
+                        </div>
+                        <div class="stat-value">
+                            {{ moderation_count }}
+                        </div>
+                    </article>
+
+                    <article class="surface-card stat-card">
+                        <div class="stat-label">
+                            <i class="bi bi-x-circle me-1"></i>
+                            Отклонено
+                        </div>
+                        <div class="stat-value">
+                            {{ rejected_count }}
+                        </div>
+                    </article>
+
+                    <article class="surface-card stat-card">
+                        <div class="stat-label">
+                            <i class="bi bi-hand-thumbs-up me-1"></i>
+                            Голоса
+                        </div>
+                        <div class="stat-value">
+                            {{ votes_count }}
+                        </div>
+                    </article>
+
+                    <article class="surface-card stat-card">
+                        <div class="stat-label">
+                            <i class="bi bi-chat me-1"></i>
+                            Комментарии
+                        </div>
+                        <div class="stat-value">
+                            {{ comments_count }}
+                        </div>
+                    </article>
+
+                    <article class="surface-card stat-card">
+                        <div class="stat-label">
+                            <i class="bi bi-person-plus me-1"></i>
+                            Новые за месяц
+                        </div>
+                        <div class="stat-value">
+                            {{ new_users_month_count }}
+                        </div>
+                    </article>
+
+                </div>
+            </section>
+
+            <section
+                id="charts"
+                class="mt-5"
+                aria-labelledby="charts-title"
+            >
+                <h2
+                    id="charts-title"
+                    class="h4 mb-3"
+                >
+                    Динамика
+                </h2>
+
+                <div class="row g-3">
+
+                    <div class="col-xl-4">
+                        <article class="surface-card chart-card">
+                            <h3 class="h6">
+                                Инициативы по статусам
+                            </h3>
+
+                            <div class="chart-frame">
+                                <canvas id="statusChart"></canvas>
+                            </div>
+                        </article>
+                    </div>
+
+                    <div class="col-xl-4">
+                        <article class="surface-card chart-card">
+                            <h3 class="h6">
+                                Инициативы за 14 дней
+                            </h3>
+
+                            <div class="chart-frame">
+                                <canvas id="initiativesChart"></canvas>
+                            </div>
+                        </article>
+                    </div>
+
+                    <div class="col-xl-4">
+                        <article class="surface-card chart-card">
+                            <h3 class="h6">
+                                Регистрации за 14 дней
+                            </h3>
+
+                            <div class="chart-frame">
+                                <canvas id="usersChart"></canvas>
+                            </div>
+                        </article>
+                    </div>
+
+                </div>
+            </section>
+
+        </main>
     </div>
-
-
-    <!-- Графики -->
-
-    <h3 class="mt-5 mb-4">Статистика</h3>
-
-    <div class="row g-4">
-        <div class="col-lg-4">
-            <div class="card shadow-sm h-100">
-                <div class="card-body">
-                    <h5 class="card-title">Инициативы по статусам</h5>
-                    <div style="height:320px;">
-                        <canvas id="statusChart"></canvas>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-lg-4">
-            <div class="card shadow-sm h-100">
-                <div class="card-body">
-                    <h5 class="card-title">Созданные инициативы по дням</h5>
-                    <p class="text-muted">Последние 14 дней</p>
-                    <div style="height:280px;">
-                        <canvas id="initiativesChart"></canvas>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-lg-4">
-            <div class="card shadow-sm h-100">
-                <div class="card-body">
-                    <h5 class="card-title">Регистрации пользователей по дням</h5>
-                    <p class="text-muted">Последние 14 дней</p>
-                    <div style="height:280px;">
-                        <canvas id="usersChart"></canvas>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
 </div>
 
 {{ status_chart_data|json_script:"status-chart-data" }}
 {{ initiatives_chart_data|json_script:"initiatives-chart-data" }}
 {{ users_chart_data|json_script:"users-chart-data" }}
 
+{% endblock %}
+
+
+{% block extra_js %}
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js"></script>
+
 <script>
-    const statusChartData = JSON.parse(
+    const rootStyle = getComputedStyle(document.documentElement);
+
+    const text = rootStyle
+        .getPropertyValue("--color-text")
+        .trim();
+
+    const muted = rootStyle
+        .getPropertyValue("--color-muted")
+        .trim();
+
+    const border = rootStyle
+        .getPropertyValue("--color-border")
+        .trim();
+
+    /*
+     * Сине-голубая палитра графиков.
+     * Без зелёного, жёлтого и оранжевого.
+     */
+  const blue1 = "#1677FF"; 
+  const blue2 = "#29A8FF"; 
+  const blue3 = "#20C9D6"; 
+  const initiativeBlue = "#2F73D9";
+  const registrationBlue = "#29A8FF";
+
+
+    Chart.defaults.color = muted;
+    Chart.defaults.borderColor = border;
+
+    Chart.defaults.plugins.legend.labels.color = text;
+
+    Chart.defaults.plugins.tooltip.backgroundColor = "#263442";
+    Chart.defaults.plugins.tooltip.titleColor = "#ffffff";
+    Chart.defaults.plugins.tooltip.bodyColor = "#ffffff";
+
+    const statusData = JSON.parse(
         document.getElementById("status-chart-data").textContent
     );
-    const initiativesChartData = JSON.parse(
+
+    const initiativesData = JSON.parse(
         document.getElementById("initiatives-chart-data").textContent
     );
-    const usersChartData = JSON.parse(
+
+    const usersData = JSON.parse(
         document.getElementById("users-chart-data").textContent
     );
 
-    new Chart(document.getElementById("statusChart"), {
-        type: "doughnut",
-        data: {
-            labels: statusChartData.labels,
-            datasets: [{
-                data: statusChartData.values,
-                backgroundColor: ["#198754", "#0d6efd", "#dc3545"]
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false
-        }
-    });
 
-    function createDailyChart(elementId, chartData, label, color) {
-        new Chart(document.getElementById(elementId), {
-            type: "line",
+    
+    new Chart(
+        document.getElementById("statusChart"),
+        {
+            type: "doughnut",
+
             data: {
-                labels: chartData.labels,
-                datasets: [{
-                    label: label,
-                    data: chartData.values,
-                    borderColor: color,
-                    backgroundColor: color,
-                    tension: 0.2
-                }]
+                labels: statusData.labels,
+
+                datasets: [
+                    {
+                        data: statusData.values,
+
+                        backgroundColor: [
+                            blue1,
+                            blue2,
+                            blue3
+                        ],
+
+                        borderColor: "#ffffff",
+                        borderWidth: 3
+                    }
+                ]
             },
+
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: { precision: 0 }
+
+                plugins: {
+                    legend: {
+                        position: "bottom"
                     }
                 }
             }
-        });
+        }
+    );
+
+
+    
+    function createLineChart(
+        id,
+        data,
+        label,
+        color,
+        fillColor
+    ) {
+        new Chart(
+            document.getElementById(id),
+            {
+                type: "line",
+
+                data: {
+                    labels: data.labels,
+
+                    datasets: [
+                        {
+                            label: label,
+                            data: data.values,
+
+                            borderColor: color,
+                            backgroundColor: fillColor,
+
+                            pointBackgroundColor: color,
+                            pointBorderColor: "#ffffff",
+                            pointBorderWidth: 2,
+                            pointRadius: 3,
+
+                            fill: true,
+                            tension: 0.25
+                        }
+                    ]
+                },
+
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+
+                    interaction: {
+                        intersect: false,
+                        mode: "index"
+                    },
+
+                    plugins: {
+                        legend: {
+                            position: "bottom"
+                        }
+                    },
+
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        },
+
+                        y: {
+                            beginAtZero: true,
+
+                            ticks: {
+                                precision: 0
+                            }
+                        }
+                    }
+                }
+            }
+        );
     }
 
-    createDailyChart(
+
+    createLineChart(
         "initiativesChart",
-        initiativesChartData,
+        initiativesData,
         "Инициативы",
-        "#0d6efd"
+        initiativeBlue,
+        "rgba(47, 115, 217, 0.12)"
     );
-    createDailyChart(
+
+    createLineChart(
         "usersChart",
-        usersChartData,
+        usersData,
         "Пользователи",
-        "#6f42c1"
+        registrationBlue,
+        "rgba(41, 168, 255, 0.16)"
     );
 </script>
 

@@ -33,6 +33,22 @@ class Initiative(models.Model):
         null=True
     )
 
+    latitude = models.DecimalField(
+        "Широта",
+        max_digits=9,
+        decimal_places=6,
+        blank=True,
+        null=True,
+    )
+
+    longitude = models.DecimalField(
+        "Долгота",
+        max_digits=9,
+        decimal_places=6,
+        blank=True,
+        null=True,
+    )
+
     category = models.ForeignKey(
         Category,
         on_delete=models.CASCADE,

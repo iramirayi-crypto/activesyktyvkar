@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Технические работы — Активный Сыктывкар{% endblock %}
+{% block content %}
+<div class="page-shell error-page">
+    <section class="surface-card error-card" aria-labelledby="error-title">
+        <div class="error-code" aria-hidden="true">500</div>
+        <h1 id="error-title" class="h2">Технические работы</h1>
+        <p>Сервис временно недоступен. Попробуйте обновить страницу позднее или вернитесь на главную.</p>
+        <div class="error-actions">
+            <a href="{% url 'home' %}" class="btn btn-primary"><i class="bi bi-house" aria-hidden="true"></i>На главную</a>
+            <a href="mailto:active.syktyvkar@mail.ru" class="btn btn-outline-primary"><i class="bi bi-envelope" aria-hidden="true"></i>Написать в поддержку</a>
+        </div>
+        <p class="small mt-4 mb-0">Поддержка: <a href="mailto:active.syktyvkar@mail.ru">active.syktyvkar@mail.ru</a></p>
+    </section>
+</div>
+{% endblock %}

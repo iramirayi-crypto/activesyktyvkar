@@ -1,0 +1,79 @@
+<article class="card initiative-card hover-card">
+    <div class="initiative-card-media">
+        {% if initiative.image %}
+            <img src="{{ initiative.image.file.url }}" alt="{{ initiative.title }}" loading="lazy">
+        {% else %}
+            <div class="initiative-card-placeholder" aria-hidden="true"><i class="bi bi-image"></i></div>
+        {% endif %}
+    </div>
+    <div class="card-body d-flex flex-column">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+            <span class="category-badge">{{ initiative.category.name }}</span>
+            {% if show_status %}
+                <span class="badge-status status-{{ initiative.status }}">{{ initiative.get_status_display }}</span>
+            {% endif %}
+        </div>
+        <h2 class="mb-2">{{ initiative.title }}</h2>
+        <p class="initiative-card-description mb-3">{{ initiative.description }}</p>
+        <div class="meta-list mb-3">
+            <span><i class="bi bi-calendar3" aria-hidden="true"></i>{{ initiative.created_at|date:"d.m.Y" }}</span>
+            {% if initiative.location %}
+                <span class="initiative-card-location">
+                    <i class="bi bi-geo-alt" aria-hidden="true"></i>{{ initiative.location|truncatechars:55 }}
+                </span>
+            {% endif %}
+            {% if initiative.status == "published" %}
+                <span><i class="bi bi-hand-thumbs-up" aria-hidden="true"></i>{{ initiative.votes_count }}</span>
+                <span><i class="bi bi-chat-dots" aria-hidden="true"></i>{{ initiative.comments_count }}</span>
+            {% endif %}
+        </div>
+        {% if initiative.status == "rejected" and initiative.moderator_comment %}
+            <div class="alert alert-danger small rejection-note"><strong>Причина:</strong> {{ initiative.moderator_comment }}</div>
+        {% endif %}
+        <div class="card-actions mt-auto">
+            <a href="{% url 'initiative_detail' initiative.pk %}" class="btn btn-outline-primary">
+                Подробнее <i class="bi bi-arrow-right" aria-hidden="true"></i>
+            </a>
+            {% if owner_actions %}
+                {% if initiative.status == "moderation" or initiative.status == "rejected" %}
+                    <a href="{% url 'edit_initiative' initiative.pk %}" class="btn btn-primary"><i class="bi bi-pencil" aria-hidden="true"></i>Редактировать</a>
+                {% endif %}
+            {% endif %}
+        </div>
+        {% if owner_actions %}
+            <div class="card-actions mt-2 pt-2 border-top">
+                {% if initiative.status == "moderation" or initiative.status == "rejected" %}
+                    <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ initiative.id }}">
+                        <i class="bi bi-trash" aria-hidden="true"></i>Удалить
+                    </button>
+                {% endif %}
+                <form method="post" action="{% url 'hide_initiative' initiative.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-outline-secondary">
+                        <i class="bi {% if hidden_page %}bi-eye{% else %}bi-eye-slash{% endif %}" aria-hidden="true"></i>{% if hidden_page %}Вернуть{% else %}Скрыть{% endif %}
+                    </button>
+                </form>
+            </div>
+        {% endif %}
+    </div>
+</article>
+
+{% if owner_actions and initiative.status != "published" %}
+<div class="modal fade" id="deleteModal{{ initiative.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ initiative.id }}" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title fs-5" id="deleteModalLabel{{ initiative.id }}">Удалить инициативу?</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+            </div>
+            <div class="modal-body">Инициатива «{{ initiative.title }}» будет удалена без возможности восстановления.</div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Отмена</button>
+                <form method="post" action="{% url 'delete_initiative' initiative.pk %}">
+                    {% csrf_token %}<button type="submit" class="btn btn-danger"><i class="bi bi-trash" aria-hidden="true"></i>Удалить</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}

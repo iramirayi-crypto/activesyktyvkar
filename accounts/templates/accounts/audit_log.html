@@ -1,110 +1,116 @@
 {% extends "base.html" %}
 
-{% block title %}
-Журнал аудита
-{% endblock %}
+{% block title %}Журнал аудита{% endblock %}
 
 {% block content %}
-
-<div class="container mt-5">
-    <a href="{% url 'admin_dashboard' %}"
-       class="btn btn-outline-primary mb-4">
-        ← Назад
-    </a>
-
-    <h2 class="mb-4">Журнал аудита</h2>
-
-    <form method="get" class="card card-body mb-4">
+<div class="page-shell">
+    <nav aria-label="Хлебные крошки">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'home' %}">Главная</a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="{% url 'admin_dashboard' %}">Администрирование</a>
+            </li>
+            <li class="breadcrumb-item active">Журнал аудита</li>
+        </ol>
+    </nav>
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Журнал аудита</h1>
+            <p class="page-subtitle">Техническая история значимых действий в проекте.</p>
+        </div>
+    </div>
+    <form method="get" class="surface-card filter-panel">
         <div class="row g-3 align-items-end">
-            <div class="col-md-3">
+            <div class="col-md-6 col-xl-3">
                 <label for="audit-user" class="form-label">Пользователь</label>
                 <input
                     id="audit-user"
-                    type="text"
+                    type="search"
                     name="user"
                     value="{{ user_query }}"
                     class="form-control"
                     placeholder="Имя пользователя"
                 >
             </div>
-
-            <div class="col-md-3">
+            <div class="col-md-6 col-xl-3">
                 <label for="audit-action" class="form-label">Действие</label>
                 <input
                     id="audit-action"
-                    type="text"
+                    type="search"
                     name="action"
                     value="{{ action_query }}"
                     class="form-control"
                     placeholder="Текст действия"
                 >
             </div>
-
-            <div class="col-md-2">
+            <div class="col-6 col-xl-2">
                 <label for="audit-date-from" class="form-label">Дата с</label>
-                <input
-                    id="audit-date-from"
-                    type="date"
-                    name="date_from"
-                    value="{{ date_from }}"
-                    class="form-control"
-                >
+                <input id="audit-date-from" type="date" name="date_from" value="{{ date_from }}" class="form-control">
             </div>
-
-            <div class="col-md-2">
+            <div class="col-6 col-xl-2">
                 <label for="audit-date-to" class="form-label">Дата по</label>
-                <input
-                    id="audit-date-to"
-                    type="date"
-                    name="date_to"
-                    value="{{ date_to }}"
-                    class="form-control"
-                >
+                <input id="audit-date-to" type="date" name="date_to" value="{{ date_to }}" class="form-control">
             </div>
-
-            <div class="col-md-2 d-flex gap-2">
-                <button type="submit" class="btn btn-primary">Найти</button>
-                <a href="{% url 'audit_log' %}" class="btn btn-outline-secondary">Сбросить</a>
+            <div class="col-xl-2 d-flex gap-2">
+                <button type="submit" class="btn btn-primary flex-grow-1">
+                    <i class="bi bi-search"></i>Найти
+                </button>
+                <a
+                    href="{% url 'audit_log' %}"
+                    class="btn btn-outline-secondary icon-btn"
+                    aria-label="Сбросить"
+                >
+                    <i class="bi bi-x-lg"></i>
+                </a>
             </div>
         </div>
     </form>
-
     {% if logs %}
-        <div class="table-responsive">
-            <table class="table table-striped align-middle">
-                <thead>
-                    <tr>
-                        <th>Дата и время</th>
-                        <th>Пользователь</th>
-                        <th>Действие</th>
-                        <th>IP-адрес</th>
-                        <th>User-Agent</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for log in logs %}
+        <div class="table-card surface-card">
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead>
                         <tr>
-                            <td>{{ log.created_at|date:"d.m.Y H:i:s" }}</td>
-                            <td>
-                                {% if log.user %}
-                                    {{ log.user.username }}
-                                {% else %}
-                                    <span class="text-muted">Удалённый пользователь</span>
-                                {% endif %}
-                            </td>
-                            <td>{{ log.action }}</td>
-                            <td>{{ log.ip_address|default:"—" }}</td>
-                            <td title="{{ log.user_agent }}">
-                                {{ log.user_agent|default:"—"|truncatechars:80 }}
-                            </td>
+                            <th>Дата и время</th>
+                            <th>Пользователь</th>
+                            <th>Действие</th>
+                            <th>IP-адрес</th>
+                            <th>User-Agent</th>
                         </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {% for log in logs %}
+                            <tr>
+                                <td class="text-nowrap">{{ log.created_at|date:"d.m.Y H:i:s" }}</td>
+                                <td>
+                                    {% if log.user %}
+                                        {{ log.user.username }}
+                                    {% else %}
+                                        <span class="text-secondary">Удалённый пользователь</span>
+                                    {% endif %}
+                                </td>
+                                <td style="min-width:260px;">{{ log.action }}</td>
+                                <td>{{ log.ip_address|default:"—" }}</td>
+                                <td title="{{ log.user_agent }}">
+                                    {{ log.user_agent|default:"—"|truncatechars:70 }}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     {% else %}
-        <div class="alert alert-info">Записи не найдены.</div>
+        <div class="empty-state">
+            <div class="empty-state-icon">
+                <i class="bi bi-journal-x"></i>
+            </div>
+            <h2 class="h4">Записи не найдены</h2>
+            <p>Измените фильтры или вернитесь к полному журналу.</p>
+            <a href="{% url 'audit_log' %}" class="btn btn-outline-primary">Сбросить фильтры</a>
+        </div>
     {% endif %}
 </div>
-
 {% endblock %}

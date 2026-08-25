@@ -6,7 +6,9 @@ from django.core.paginator import Paginator
 from django.views.decorators.http import require_POST
 
 from .models import Initiative, Vote, Category
+from .forms import InitiativeForm
 from comments.models import Comment
+from comments.forms import CommentForm
 from attachments.models import Attachment
 from accounts.models import AuditLog
 from accounts.models import Notification
@@ -117,6 +119,7 @@ def initiative_detail(request, pk):
     votes_count = 0
     user_voted = False
     comments = Comment.objects.none()
+    comment_form = CommentForm()
 
     if initiative.status == "published":
 
@@ -144,6 +147,7 @@ def initiative_detail(request, pk):
             "votes_count": votes_count,
             "user_voted": user_voted,
             "comments": comments,
+            "comment_form": comment_form,
 
             # Передаём в шаблон, является ли пользователь модератором
             "is_moderator": (
@@ -154,6 +158,7 @@ def initiative_detail(request, pk):
     )
 
 # Голосование за инициативу
+@require_POST
 def vote_initiative(request, pk):
 
     # Если пользователь не вошел в систему
@@ -163,7 +168,8 @@ def vote_initiative(request, pk):
     # Получаем инициативу
     initiative = get_object_or_404(
         Initiative,
-        pk=pk
+        pk=pk,
+        status="published"
     )
 
     # Проверяем, голосовал ли пользователь
@@ -175,6 +181,7 @@ def vote_initiative(request, pk):
     # Если голос уже есть — удаляем его
     if vote.exists():
         vote.delete()
+        messages.info(request, "Ваш голос отменён.")
 
     # Иначе создаем новый голос
     else:
@@ -182,6 +189,7 @@ def vote_initiative(request, pk):
             initiative=initiative,
             user=request.user
         )
+        messages.success(request, "Спасибо! Ваш голос учтён.")
 
     # Возвращаемся на страницу инициативы
     return redirect(
@@ -209,32 +217,23 @@ def edit_comment(request, pk):
 
     # Если отправлена форма
     if request.method == "POST":
-        text = request.POST.get("text", "").strip()
-
-        if not text:
-            messages.error(request, "Комментарий не может быть пустым.")
-            return redirect("edit_comment", pk=pk)
-
-        if len(text) > 1000:
-            messages.error(
-                request,
-                "Комментарий не должен превышать 1000 символов."
+        form = CommentForm(request.POST, instance=comment)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Комментарий изменён.")
+            return redirect(
+                "initiative_detail",
+                pk=comment.initiative.id
             )
-            return redirect("edit_comment", pk=pk)
-
-        comment.text = text
-        comment.save()
-
-        return redirect(
-            "initiative_detail",
-            pk=comment.initiative.id
-        )
+    else:
+        form = CommentForm(instance=comment)
 
     return render(
         request,
         "initiatives/edit_comment.html",
         {
-            "comment": comment
+            "comment": comment,
+            "form": form,
         }
     )
 
@@ -268,49 +267,38 @@ def hidden_initiatives(request):
 @login_required
 def create_initiative(request):
     if request.method == "POST":
-        title = request.POST.get("title")
-        description = request.POST.get("description")
-        location = request.POST.get("location")
-        category_id = request.POST.get("category")
-        uploaded_file = request.FILES.get("file")
+        form = InitiativeForm(request.POST, request.FILES)
+        if form.is_valid():
+            initiative = form.save(commit=False)
+            initiative.author = request.user
+            initiative.status = "moderation"
+            initiative.save()
 
-        category = get_object_or_404(
-            Category,
-            id=category_id
-        )
+            if form.cleaned_data.get("image"):
+                Attachment.objects.create(
+                    initiative=initiative,
+                    file=form.cleaned_data["image"]
+                )
 
-        initiative = Initiative.objects.create(
-            author=request.user,
-            title=title,
-            description=description,
-            location=location,
-            category=category,
-            status="moderation"
-        )
-
-        # Сохраняем загруженный файл
-        if uploaded_file:
-            Attachment.objects.create(
-                initiative=initiative,
-                file=uploaded_file
+            AuditLog.objects.create(
+                user=request.user,
+                action=f'Создана инициатива «{initiative.title}»',
+                ip_address=request.META.get("REMOTE_ADDR"),
+                user_agent=request.META.get("HTTP_USER_AGENT", "")
             )
-
-        AuditLog.objects.create(
-            user=request.user,
-            action=f'Создана инициатива «{initiative.title}»',
-            ip_address=request.META.get("REMOTE_ADDR"),
-            user_agent=request.META.get("HTTP_USER_AGENT", "")
-        )
-
-        return redirect("my_initiatives")
-
-    categories = Category.objects.all()
+            messages.success(
+                request,
+                "Инициатива создана и отправлена на модерацию."
+            )
+            return redirect("my_initiatives")
+    else:
+        form = InitiativeForm()
 
     return render(
         request,
         "initiatives/create_initiative.html",
         {
-            "categories": categories
+            "form": form,
         }
     )
 
@@ -324,6 +312,7 @@ def delete_initiative(request, pk):
 
     if request.method == "POST":
         initiative.delete()
+        messages.success(request, "Инициатива удалена.")
         return redirect("my_initiatives")
 
     return render(
@@ -346,39 +335,40 @@ def edit_initiative(request, pk):
 
     if request.method == "POST":
         was_rejected = initiative.status == "rejected"
+        form = InitiativeForm(request.POST, request.FILES, instance=initiative)
+        if form.is_valid():
+            initiative = form.save(commit=False)
+            initiative.status = "moderation"
+            if was_rejected:
+                initiative.moderator_comment = None
+            initiative.save()
 
-        initiative.title = request.POST.get("title")
-        initiative.description = request.POST.get("description")
-        initiative.location = request.POST.get("location")
+            if form.cleaned_data.get("image"):
+                Attachment.objects.create(
+                    initiative=initiative,
+                    file=form.cleaned_data["image"]
+                )
 
-        category_id = request.POST.get("category")
-        initiative.category = get_object_or_404(
-            Category,
-            id=category_id
-        )
-
-        initiative.status = "moderation"
-        if was_rejected:
-            initiative.moderator_comment = None
-        initiative.save()
-
-        AuditLog.objects.create(
-            user=request.user,
-            action=f'Отредактирована инициатива «{initiative.title}»',
-            ip_address=request.META.get("REMOTE_ADDR"),
-            user_agent=request.META.get("HTTP_USER_AGENT", "")
-        )
-
-        return redirect("my_initiatives")
-
-    categories = Category.objects.all()
+            AuditLog.objects.create(
+                user=request.user,
+                action=f'Отредактирована инициатива «{initiative.title}»',
+                ip_address=request.META.get("REMOTE_ADDR"),
+                user_agent=request.META.get("HTTP_USER_AGENT", "")
+            )
+            messages.success(
+                request,
+                "Инициатива изменена и отправлена на модерацию."
+            )
+            return redirect("my_initiatives")
+    else:
+        form = InitiativeForm(instance=initiative)
 
     return render(
         request,
         "initiatives/edit_initiative.html",
         {
             "initiative": initiative,
-            "categories": categories
+            "form": form,
         }
     )
 
@@ -393,6 +383,10 @@ def hide_initiative(request, pk):
     if request.method == "POST":
         initiative.is_hidden = not initiative.is_hidden
         initiative.save()
+        if initiative.is_hidden:
+            messages.info(request, "Инициатива перемещена в скрытые.")
+        else:
+            messages.success(request, "Инициатива возвращена.")
 
     if initiative.is_hidden:
         return redirect("my_initiatives")
@@ -410,6 +404,7 @@ def unhide_initiative(request, pk):
     if request.method == "POST":
         initiative.is_hidden = False
         initiative.save()
+        messages.success(request, "Инициатива возвращена.")
 
     return redirect("hidden_initiatives")
 
@@ -490,6 +485,9 @@ def moderation(request):
             "published_initiatives": published_initiatives,
             "moderation_query": moderation_query,
             "published_query": published_query,
+            "moderation_count": initiatives.count(),
+            "published_count": published_initiatives.count(),
+            "comments_count": Comment.objects.count(),
         },
     )
 
@@ -522,6 +520,7 @@ def publish_initiative(request, initiative_id):
         ip_address=request.META.get("REMOTE_ADDR"),
         user_agent=request.META.get("HTTP_USER_AGENT", "")
     )
+    messages.success(request, "Инициатива опубликована.")
 
     return redirect("moderation")
 
@@ -563,6 +562,7 @@ def reject_initiative(request, initiative_id):
         ip_address=request.META.get("REMOTE_ADDR"),
         user_agent=request.META.get("HTTP_USER_AGENT", "")
     )
+    messages.warning(request, "Инициатива отклонена.")
 
     return redirect("moderation")
 
@@ -586,5 +586,6 @@ def return_to_moderation(request, initiative_id):
         ip_address=request.META.get("REMOTE_ADDR"),
         user_agent=request.META.get("HTTP_USER_AGENT", "")
     )
+    messages.info(request, "Инициатива возвращена на модерацию.")
 
     return redirect("moderation")

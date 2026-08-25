@@ -15,7 +15,7 @@
 
             <div class="card-body">
 
-                <form method="post">
+                <form method="post" class="needs-validation" novalidate>
                     {% csrf_token %}
 
                     {% if form.non_field_errors %}
@@ -34,6 +34,7 @@
                                value="{{ form.username.value|default:'' }}"
                                class="form-control {% if form.username.errors %}is-invalid{% endif %}"
                                autocomplete="username"
+                               maxlength="150"
                                required>
                         {% for error in form.username.errors %}
                             <div class="invalid-feedback">{{ error }}</div>

@@ -12,7 +12,7 @@
             </div>
 
             <div class="card-body">
-                <form method="post">
+                <form method="post" class="needs-validation" novalidate>
                     {% csrf_token %}
 
                     {% if form.non_field_errors %}
@@ -31,6 +31,7 @@
                                value="{{ form.username.value|default:'' }}"
                                class="form-control {% if form.username.errors %}is-invalid{% endif %}"
                                autocomplete="username"
+                               maxlength="150"
                                required>
                         {% for error in form.username.errors %}
                             <div class="invalid-feedback">{{ error }}</div>
@@ -45,6 +46,7 @@
                                value="{{ form.email.value|default:'' }}"
                                class="form-control {% if form.email.errors %}is-invalid{% endif %}"
                                autocomplete="email"
+                               maxlength="254"
                                required>
                         {% for error in form.email.errors %}
                             <div class="invalid-feedback">{{ error }}</div>
@@ -104,6 +106,10 @@
                         Зарегистрироваться
                     </button>
                 </form>
+                <p class="small text-secondary text-center mt-3 mb-0">
+                    Перед регистрацией можно ознакомиться с
+                    <a href="{% url 'privacy_policy' %}">Политикой обработки персональных данных</a>.
+                </p>
             </div>
         </div>
     </div>
