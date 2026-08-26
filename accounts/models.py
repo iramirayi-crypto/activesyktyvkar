@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils import timezone
 
 
 # Профиль пользователя
@@ -28,6 +29,53 @@ class Profile(models.Model):
         blank=True,
         null=True
     )
+
+    email_verified_at = models.DateTimeField(
+        "Дата подтверждения Email",
+        blank=True,
+        null=True,
+    )
+
+    blocked_until = models.DateTimeField(
+        "Заблокирован до",
+        blank=True,
+        null=True,
+    )
+
+    block_reason = models.TextField(
+        "Причина блокировки",
+        blank=True,
+        default="",
+    )
+
+    is_permanently_blocked = models.BooleanField(
+        "Бессрочная блокировка",
+        default=False,
+    )
+
+    is_deleted = models.BooleanField(
+        "Аккаунт удалён",
+        default=False,
+    )
+
+    deleted_at = models.DateTimeField(
+        "Дата удаления аккаунта",
+        blank=True,
+        null=True,
+    )
+
+    @property
+    def is_blocked(self):
+        return (
+            not self.is_deleted
+            and (
+                self.is_permanently_blocked
+                or (
+                    self.blocked_until is not None
+                    and self.blocked_until > timezone.now()
+                )
+            )
+        )
 
     def __str__(self):
         return self.user.username

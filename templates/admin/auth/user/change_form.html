@@ -1,0 +1,15 @@
+{% extends "admin/change_form.html" %}
+
+{% block object-tools-items %}
+    {{ block.super }}
+    {% if original and request.user.is_superuser and not original.is_superuser %}
+        {% if not original.profile.is_deleted %}
+            {% if original.profile.is_blocked %}
+                <li><a href="{% url 'admin:auth_user_unblock' original.pk %}">Разблокировать</a></li>
+            {% else %}
+                <li><a href="{% url 'admin:auth_user_block' original.pk %}">Заблокировать</a></li>
+            {% endif %}
+            <li><a href="{% url 'admin:auth_user_soft_delete' original.pk %}">Удалить пользователя</a></li>
+        {% endif %}
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Подтверждение Email{% endblock %}
+
+{% block content %}
+<div class="page-shell-narrow">
+    <div class="surface-card auth-card form-card">
+        <div class="auth-icon"><i class="bi bi-envelope-check"></i></div>
+        <h1 class="h3">{% if email_change %}Подтверждение нового Email{% else %}Подтверждение Email{% endif %}</h1>
+        <p class="text-secondary">
+            Введите шестизначный код, отправленный на {{ email }}.
+        </p>
+        <form method="post" class="needs-validation" novalidate>
+            {% csrf_token %}
+            <label for="{{ form.code.id_for_label }}" class="form-label">{{ form.code.label }}</label>
+            <input
+                type="text"
+                name="code"
+                id="{{ form.code.id_for_label }}"
+                value="{{ form.code.value|default:'' }}"
+                class="form-control {% if form.code.errors %}is-invalid{% endif %}"
+                inputmode="numeric"
+                autocomplete="one-time-code"
+                maxlength="6"
+                pattern="[0-9]{6}"
+                placeholder="000000"
+                required
+            >
+            {% for error in form.code.errors %}
+                <div class="invalid-feedback">{{ error }}</div>
+            {% endfor %}
+            <button type="submit" class="btn btn-primary w-100 mt-4">Подтвердить Email</button>
+        </form>
+        <form method="post" action="{% url 'resend_email_verification' %}" class="mt-3">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-outline-primary w-100">Отправить код повторно</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

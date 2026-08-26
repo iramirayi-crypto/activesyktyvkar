@@ -1,0 +1,1 @@
+{% if account and not account.profile.is_deleted %}{% if account.first_name or account.last_name %}{{ account.get_full_name }} (@{{ account.username }}){% else %}@{{ account.username }}{% endif %}{% else %}Удалённый пользователь{% endif %}
