@@ -47,11 +47,31 @@
             </div>
             <div class="col-6 col-xl-2">
                 <label for="audit-date-from" class="form-label">Дата с</label>
-                <input id="audit-date-from" type="date" name="date_from" value="{{ date_from }}" class="form-control">
+                <input
+                    id="audit-date-from"
+                    type="text"
+                    name="date_from"
+                    value="{{ date_from }}"
+                    class="form-control"
+                    placeholder="ДД.ММ.ГГГГ"
+                    inputmode="numeric"
+                    maxlength="10"
+                    data-date-mask
+                >
             </div>
             <div class="col-6 col-xl-2">
                 <label for="audit-date-to" class="form-label">Дата по</label>
-                <input id="audit-date-to" type="date" name="date_to" value="{{ date_to }}" class="form-control">
+                <input
+                    id="audit-date-to"
+                    type="text"
+                    name="date_to"
+                    value="{{ date_to }}"
+                    class="form-control"
+                    placeholder="ДД.ММ.ГГГГ"
+                    inputmode="numeric"
+                    maxlength="10"
+                    data-date-mask
+                >
             </div>
             <div class="col-xl-2 d-flex gap-2">
                 <button type="submit" class="btn btn-primary flex-grow-1">

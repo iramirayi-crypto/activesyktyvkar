@@ -44,6 +44,47 @@
         и место реализации. Также можно добавить изображение.
     </p>
 
+    <section id="initiative-categories" class="mt-5" aria-labelledby="initiative-categories-title">
+        <h2 id="initiative-categories-title" class="h3">Категории инициатив</h2>
+        <p>
+            При создании инициативы выберите категорию, которая наиболее точно соответствует её теме.
+        </p>
+        <div class="accordion accordion-flush border rounded-3 overflow-hidden" id="initiativeCategoriesAccordion">
+            {% for guide in category_guides %}
+                <div class="accordion-item">
+                    <h3 class="accordion-header" id="category-heading-{{ guide.category.pk }}">
+                        <button
+                            class="accordion-button collapsed"
+                            type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#category-collapse-{{ guide.category.pk }}"
+                            aria-expanded="false"
+                            aria-controls="category-collapse-{{ guide.category.pk }}"
+                        >
+                            {{ guide.category.name }}
+                        </button>
+                    </h3>
+                    <div
+                        id="category-collapse-{{ guide.category.pk }}"
+                        class="accordion-collapse collapse"
+                        aria-labelledby="category-heading-{{ guide.category.pk }}"
+                        data-bs-parent="#initiativeCategoriesAccordion"
+                    >
+                        <div class="accordion-body">
+                            <p>{{ guide.category.description }}</p>
+                            <div class="fw-semibold mb-2">Примеры инициатив:</div>
+                            <ul class="mb-0">
+                                {% for example in guide.examples %}
+                                    <li>{{ example }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+
     <h4 class="mt-4">4. Дождитесь результата модерации</h4>
 
     <p>
