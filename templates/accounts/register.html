@@ -39,6 +39,36 @@
                     </div>
 
                     <div class="mb-3">
+                        <label for="id_first_name" class="form-label">Имя</label>
+                        <input id="id_first_name"
+                               type="text"
+                               name="first_name"
+                               value="{{ form.first_name.value|default:'' }}"
+                               class="form-control {% if form.first_name.errors %}is-invalid{% endif %}"
+                               autocomplete="given-name"
+                               maxlength="150"
+                               required>
+                        {% for error in form.first_name.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="id_last_name" class="form-label">Фамилия</label>
+                        <input id="id_last_name"
+                               type="text"
+                               name="last_name"
+                               value="{{ form.last_name.value|default:'' }}"
+                               class="form-control {% if form.last_name.errors %}is-invalid{% endif %}"
+                               autocomplete="family-name"
+                               maxlength="150"
+                               required>
+                        {% for error in form.last_name.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mb-3">
                         <label for="id_email" class="form-label">Email</label>
                         <input id="id_email"
                                type="email"
@@ -55,15 +85,27 @@
 
                     <div class="mb-3">
                         <label for="id_password1" class="form-label">Пароль</label>
-                        <input id="id_password1"
-                               type="password"
-                               name="password1"
-                               class="form-control {% if form.password1.errors %}is-invalid{% endif %}"
-                               autocomplete="new-password"
-                               required>
-                        {% for error in form.password1.errors %}
-                            <div class="invalid-feedback">{{ error }}</div>
-                        {% endfor %}
+                        <div class="password-field" data-password-field>
+                            <input id="id_password1"
+                                   type="password"
+                                   name="password1"
+                                   class="form-control {% if form.password1.errors %}is-invalid{% endif %}"
+                                   autocomplete="new-password"
+                                   data-password-input
+                                   required>
+                            <button type="button"
+                                    class="password-toggle"
+                                    data-password-toggle
+                                    aria-controls="id_password1"
+                                    aria-label="Показать пароль"
+                                    title="Показать пароль"
+                                    aria-pressed="false">
+                                <i class="bi bi-eye" data-password-toggle-icon aria-hidden="true"></i>
+                            </button>
+                            {% for error in form.password1.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
                         {% if form.password1.help_text %}
                             <div class="form-text">{{ form.password1.help_text|safe }}</div>
                         {% endif %}
@@ -71,15 +113,27 @@
 
                     <div class="mb-3">
                         <label for="id_password2" class="form-label">Подтвердите пароль</label>
-                        <input id="id_password2"
-                               type="password"
-                               name="password2"
-                               class="form-control {% if form.password2.errors %}is-invalid{% endif %}"
-                               autocomplete="new-password"
-                               required>
-                        {% for error in form.password2.errors %}
-                            <div class="invalid-feedback">{{ error }}</div>
-                        {% endfor %}
+                        <div class="password-field" data-password-field>
+                            <input id="id_password2"
+                                   type="password"
+                                   name="password2"
+                                   class="form-control {% if form.password2.errors %}is-invalid{% endif %}"
+                                   autocomplete="new-password"
+                                   data-password-input
+                                   required>
+                            <button type="button"
+                                    class="password-toggle"
+                                    data-password-toggle
+                                    aria-controls="id_password2"
+                                    aria-label="Показать пароль"
+                                    title="Показать пароль"
+                                    aria-pressed="false">
+                                <i class="bi bi-eye" data-password-toggle-icon aria-hidden="true"></i>
+                            </button>
+                            {% for error in form.password2.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
                     </div>
 
                     <div class="form-check mb-3">

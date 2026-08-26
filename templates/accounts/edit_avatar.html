@@ -41,6 +41,14 @@
                 <button type="submit" class="btn btn-primary">Сохранить</button>
             </div>
         </form>
+        {% if user.profile.avatar %}
+            <form method="post" action="{% url 'delete_avatar' %}" class="mt-3">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-danger w-100">
+                    <i class="bi bi-trash"></i>Удалить фото
+                </button>
+            </form>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

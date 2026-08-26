@@ -36,9 +36,9 @@
                     <dt>Логин</dt>
                     <dd>{{ user.username }}</dd>
                 </div>
-                <div class="profile-field">
+                <div class="profile-field profile-email-field">
                     <dt>Email</dt>
-                    <dd>{{ user.email|default:"Не указан" }}</dd>
+                    <dd class="profile-email-value">{{ user.email|default:"Не указан" }}</dd>
                 </div>
                 <div class="profile-field">
                     <dt>Имя</dt>
@@ -56,8 +56,75 @@
                 <a href="{% url 'password_change' %}" class="btn btn-outline-primary">
                     <i class="bi bi-key"></i>Изменить пароль
                 </a>
+                <a href="{% url 'change_email' %}" class="btn btn-outline-primary">
+                    <i class="bi bi-envelope"></i>Изменить Email
+                </a>
             </div>
         </div>
     </div>
+    {% if not user.is_superuser %}
+        <section class="surface-card form-card border border-danger mt-4" aria-labelledby="danger-zone-title">
+            <h2 id="danger-zone-title" class="h4 text-danger">Опасная зона</h2>
+            <p class="text-secondary">
+                Удаление аккаунта необратимо. Опубликованные инициативы сохранятся без данных автора.
+            </p>
+            <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
+                <i class="bi bi-trash"></i>Удалить аккаунт
+            </button>
+        </section>
+
+        <div class="modal fade" id="deleteAccountModal" tabindex="-1" aria-labelledby="deleteAccountModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2 class="modal-title fs-5" id="deleteAccountModalLabel">Удалить аккаунт?</h2>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                    </div>
+                    <form method="post" action="{% url 'delete_account' %}">
+                        {% csrf_token %}
+                        <div class="modal-body">
+                            <p>
+                                После удаления аккаунта вы больше не сможете войти.
+                                Опубликованные инициативы останутся на сайте,
+                                но информация об авторе будет обезличена.
+                            </p>
+                            <label for="id_current_password" class="form-label">Текущий пароль</label>
+                            <div class="password-field" data-password-field>
+                                <input
+                                    id="id_current_password"
+                                    type="password"
+                                    name="current_password"
+                                    class="form-control {% if delete_form.current_password.errors %}is-invalid{% endif %}"
+                                    autocomplete="current-password"
+                                    data-password-input
+                                    required
+                                >
+                                <button type="button" class="password-toggle" data-password-toggle
+                                        aria-controls="id_current_password" aria-label="Показать пароль"
+                                        title="Показать пароль" aria-pressed="false">
+                                    <i class="bi bi-eye" data-password-toggle-icon aria-hidden="true"></i>
+                                </button>
+                                {% for error in delete_form.current_password.errors %}
+                                    <div class="invalid-feedback">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Отмена</button>
+                            <button type="submit" class="btn btn-danger">Удалить аккаунт</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    {% endif %}
 </div>
+{% endblock %}
+
+{% block extra_js %}
+    {% if show_delete_modal %}
+        <script>
+            bootstrap.Modal.getOrCreateInstance(document.getElementById("deleteAccountModal")).show();
+        </script>
+    {% endif %}
 {% endblock %}

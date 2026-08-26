@@ -43,15 +43,27 @@
 
                     <div class="mb-3">
                         <label for="id_password" class="form-label">Пароль</label>
-                        <input id="id_password"
-                               type="password"
-                               name="password"
-                               class="form-control {% if form.password.errors %}is-invalid{% endif %}"
-                               autocomplete="current-password"
-                               required>
-                        {% for error in form.password.errors %}
-                            <div class="invalid-feedback">{{ error }}</div>
-                        {% endfor %}
+                        <div class="password-field" data-password-field>
+                            <input id="id_password"
+                                   type="password"
+                                   name="password"
+                                   class="form-control {% if form.password.errors %}is-invalid{% endif %}"
+                                   autocomplete="current-password"
+                                   data-password-input
+                                   required>
+                            <button type="button"
+                                    class="password-toggle"
+                                    data-password-toggle
+                                    aria-controls="id_password"
+                                    aria-label="Показать пароль"
+                                    title="Показать пароль"
+                                    aria-pressed="false">
+                                <i class="bi bi-eye" data-password-toggle-icon aria-hidden="true"></i>
+                            </button>
+                            {% for error in form.password.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
                     </div>
 
                     <button type="submit" class="btn btn-primary w-100">
