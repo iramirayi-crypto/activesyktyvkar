@@ -35,14 +35,16 @@
                 Подробнее <i class="bi bi-arrow-right" aria-hidden="true"></i>
             </a>
             {% if owner_actions %}
-                {% if initiative.status == "moderation" or initiative.status == "rejected" %}
-                    <a href="{% url 'edit_initiative' initiative.pk %}" class="btn btn-primary"><i class="bi bi-pencil" aria-hidden="true"></i>Редактировать</a>
-                {% endif %}
-            {% endif %}
+    {% if initiative.status == "draft" or initiative.status == "rejected" %}
+        <a href="{% url 'edit_initiative' initiative.pk %}" class="btn btn-primary">
+            <i class="bi bi-pencil" aria-hidden="true"></i>Редактировать
+        </a>
+    {% endif %}
+{% endif %}
         </div>
         {% if owner_actions %}
             <div class="card-actions mt-2 pt-2 border-top">
-                {% if initiative.status == "moderation" or initiative.status == "rejected" %}
+                {% if initiative.status == "draft" or initiative.status == "moderation" or initiative.status == "rejected" %}
                     <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ initiative.id }}">
                         <i class="bi bi-trash" aria-hidden="true"></i>Удалить
                     </button>

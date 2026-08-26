@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.shortcuts import render, get_object_or_404, redirect
 from django.db.models import Q, Count 
 from django.contrib import messages
@@ -14,11 +16,20 @@ from accounts.models import AuditLog
 from accounts.models import Notification
 
 # Список опубликованных инициатив
+def parse_filter_date(value):
+    try:
+        return datetime.strptime(value, "%d.%m.%Y").date()
+    except (TypeError, ValueError):
+        return None
+
+
 def initiative_list(request):
 
     query = request.GET.get("q", "").strip()
     category = request.GET.get("category", "")
     sort = request.GET.get("sort", "newest")
+    date_from = request.GET.get("date_from", "")
+    date_to = request.GET.get("date_to", "")
 
     # Только опубликованные инициативы
     initiatives = Initiative.objects.filter(
@@ -30,7 +41,10 @@ def initiative_list(request):
         initiatives = initiatives.filter(
             Q(title__icontains=query) |
             Q(description__icontains=query) |
-            Q(category__name__icontains=query)
+            Q(category__name__icontains=query) |
+            Q(author__username__icontains=query) |
+            Q(author__first_name__icontains=query) |
+            Q(author__last_name__icontains=query)
         )
 
     # Фильтр по категории
@@ -40,6 +54,13 @@ def initiative_list(request):
         )
     elif category:
         category = ""
+
+    parsed_date_from = parse_filter_date(date_from)
+    parsed_date_to = parse_filter_date(date_to)
+    if parsed_date_from:
+        initiatives = initiatives.filter(created_at__date__gte=parsed_date_from)
+    if parsed_date_to:
+        initiatives = initiatives.filter(created_at__date__lte=parsed_date_to)
 
     sort_options = {
         "newest": "-created_at",
@@ -75,6 +96,8 @@ def initiative_list(request):
             "query": query,
             "category": category,
             "sort": sort,
+            "date_from": date_from,
+            "date_to": date_to,
             "categories": Category.objects.all(),
         },
     )
@@ -97,9 +120,19 @@ def initiative_detail(request, pk):
         pk=pk
     )
 
+    if (
+        initiative.status != "published"
+        and initiative.author
+        and initiative.author.profile.is_deleted
+    ):
+        return redirect("initiative_list")
+
     # Неопубликованную инициативу может смотреть
     # только её автор или модератор
-    if initiative.status != "published":
+    if initiative.status == "draft":
+        if not request.user.is_authenticated or initiative.author != request.user:
+            return redirect("initiative_list")
+    elif initiative.status != "published":
 
         if not request.user.is_authenticated:
             return redirect("initiative_list")
@@ -269,9 +302,11 @@ def create_initiative(request):
     if request.method == "POST":
         form = InitiativeForm(request.POST, request.FILES)
         if form.is_valid():
+            action = request.POST.get("action", "moderation")
+            status = "draft" if action == "draft" else "moderation"
             initiative = form.save(commit=False)
             initiative.author = request.user
-            initiative.status = "moderation"
+            initiative.status = status
             initiative.save()
 
             if form.cleaned_data.get("image"):
@@ -288,7 +323,9 @@ def create_initiative(request):
             )
             messages.success(
                 request,
-                "Инициатива создана и отправлена на модерацию."
+                "Черновик сохранён."
+                if status == "draft"
+                else "Инициатива создана и отправлена на модерацию."
             )
             return redirect("my_initiatives")
     else:
@@ -337,8 +374,10 @@ def edit_initiative(request, pk):
         was_rejected = initiative.status == "rejected"
         form = InitiativeForm(request.POST, request.FILES, instance=initiative)
         if form.is_valid():
+            action = request.POST.get("action", "moderation")
+            status = "draft" if action == "draft" else "moderation"
             initiative = form.save(commit=False)
-            initiative.status = "moderation"
+            initiative.status = status
             if was_rejected:
                 initiative.moderator_comment = None
             initiative.save()
@@ -357,7 +396,9 @@ def edit_initiative(request, pk):
             )
             messages.success(
                 request,
-                "Инициатива изменена и отправлена на модерацию."
+                "Черновик сохранён."
+                if status == "draft"
+                else "Инициатива изменена и отправлена на модерацию."
             )
             return redirect("my_initiatives")
     else:
@@ -439,7 +480,8 @@ def moderation(request):
     published_query = request.GET.get("published_q", "").strip()
 
     initiatives = Initiative.objects.filter(
-        status="moderation"
+        status="moderation",
+        is_hidden=False,
     ).order_by("-created_at")
 
     published_initiatives = Initiative.objects.filter(
@@ -500,7 +542,8 @@ def publish_initiative(request, initiative_id):
     initiative = get_object_or_404(
         Initiative,
         id=initiative_id,
-        status="moderation"
+        status="moderation",
+        is_hidden=False,
     )
 
     initiative.status = "published"

@@ -24,7 +24,10 @@ class Initiative(models.Model):
 
     title = models.CharField("Название", max_length=200)
 
-    description = models.TextField("Описание")
+    description = models.TextField(
+    "Описание",
+    blank=True
+)
 
     location = models.TextField(
         "Место реализации",
@@ -50,10 +53,12 @@ class Initiative(models.Model):
     )
 
     category = models.ForeignKey(
-        Category,
-        on_delete=models.CASCADE,
-        verbose_name="Категория"
-    )
+    Category,
+    on_delete=models.CASCADE,
+    verbose_name="Категория",
+    blank=True,
+    null=True
+)
 
     author = models.ForeignKey(
         User,

@@ -48,7 +48,7 @@
                     <tbody>
                         {% for comment in comments %}
                             <tr>
-                                <td class="fw-semibold">{{ comment.author.username }}</td>
+                                <td class="fw-semibold">{% include "includes/user_display_name.html" with account=comment.author %}</td>
                                 <td class="moderation-comment-cell">{{ comment.text|truncatechars:180 }}</td>
                                 <td>
                                     <a href="{% url 'initiative_detail' comment.initiative.pk %}">
@@ -97,7 +97,7 @@
                             ></button>
                         </div>
                         <div class="modal-body">
-                            Комментарий {{ comment.author.username }} будет удалён без возможности восстановления.
+                            Комментарий {% include "includes/user_display_name.html" with account=comment.author %} будет удалён без возможности восстановления.
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">

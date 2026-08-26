@@ -35,7 +35,7 @@
         <h1 class="page-title">{{ initiative.title }}</h1>
         <div class="meta-list mt-3">
             <span>
-                <i class="bi bi-person"></i>{{ initiative.author.username|default:"Автор удалён" }}
+                <i class="bi bi-person"></i>{% include "includes/user_display_name.html" with account=initiative.author %}
             </span>
             <span>
                 <i class="bi bi-calendar3"></i>{{ initiative.created_at|date:"d.m.Y" }}
@@ -120,7 +120,7 @@
                                     {% endif %}
                                     <div>
                                         <div class="comment-head">
-                                            <strong>{{ comment.author.username }}</strong>
+                                            <strong>{% include "includes/user_display_name.html" with account=comment.author %}</strong>
                                             <time
                                                 class="text-secondary small"
                                                 datetime="{{ comment.created_at|date:'c' }}"
@@ -244,7 +244,7 @@
                 <dt class="text-secondary small mt-3">Категория</dt>
                 <dd>{{ initiative.category.name }}</dd>
                 <dt class="text-secondary small mt-3">Автор</dt>
-                <dd>{{ initiative.author.username|default:"Автор удалён" }}</dd>
+                <dd>{% include "includes/user_display_name.html" with account=initiative.author %}</dd>
                 {% if initiative.location %}
                     <dt class="text-secondary small mt-3">Место реализации</dt>
                     <dd>{{ initiative.location }}</dd>

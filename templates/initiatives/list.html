@@ -16,7 +16,7 @@
         {% endif %}
     </div>
     <form method="get" class="surface-card filter-panel" role="search">
-        <div class="filter-grid">
+        <div class="filter-grid filter-grid--extended">
             <div>
                 <label for="initiative-search" class="form-label">Поиск</label>
                 <input
@@ -24,7 +24,7 @@
                     type="search"
                     name="q"
                     class="form-control"
-                    placeholder="Название, описание или категория"
+                    placeholder="Название, описание, категория или автор"
                     value="{{ query }}"
                 >
             </div>
@@ -46,11 +46,19 @@
                     <option value="oldest" {% if sort == "oldest" %}selected{% endif %}>Сначала старые</option>
                 </select>
             </div>
+            <div>
+                <label for="initiative-date-from" class="form-label">Дата от</label>
+                <input id="initiative-date-from" type="text" name="date_from" value="{{ date_from }}" class="form-control" placeholder="ДД.ММ.ГГГГ" inputmode="numeric" maxlength="10" data-date-mask>
+            </div>
+            <div>
+                <label for="initiative-date-to" class="form-label">Дата до</label>
+                <input id="initiative-date-to" type="text" name="date_to" value="{{ date_to }}" class="form-control" placeholder="ДД.ММ.ГГГГ" inputmode="numeric" maxlength="10" data-date-mask>
+            </div>
             <button type="submit" class="btn btn-primary">
                 <i class="bi bi-search" aria-hidden="true"></i>Найти
             </button>
         </div>
-        {% if query or category %}
+        {% if query or category or date_from or date_to or sort != "newest" %}
             <div class="mt-3">
                 <a href="{% url 'initiative_list' %}" class="btn btn-link btn-sm">
                     <i class="bi bi-x-lg" aria-hidden="true"></i>Сбросить фильтры
@@ -70,20 +78,20 @@
                 <i class="bi bi-search"></i>
             </div>
             <h2 class="h4">
-                {% if query or category %}
+                {% if query or category or date_from or date_to %}
                     Ничего не найдено
                 {% else %}
                     Пока нет опубликованных инициатив
                 {% endif %}
             </h2>
             <p>
-                {% if query or category %}
+                {% if query or category or date_from or date_to %}
                     Измените запрос или сбросьте фильтры.
                 {% else %}
                     Здесь появятся идеи, прошедшие модерацию.
                 {% endif %}
             </p>
-            {% if query or category %}
+            {% if query or category or date_from or date_to %}
                 <a href="{% url 'initiative_list' %}" class="btn btn-outline-primary">Показать все</a>
             {% endif %}
         </div>
@@ -95,7 +103,7 @@
                     <li class="page-item">
                         <a
                             class="page-link"
-                            href="?q={{ query|urlencode }}&category={{ category|urlencode }}&sort={{ sort|urlencode }}&page={{ page_obj.previous_page_number }}"
+                            href="?q={{ query|urlencode }}&category={{ category|urlencode }}&date_from={{ date_from|urlencode }}&date_to={{ date_to|urlencode }}&sort={{ sort|urlencode }}&page={{ page_obj.previous_page_number }}"
                             aria-label="Предыдущая"
                         >
                             <i class="bi bi-chevron-left"></i>
@@ -106,7 +114,7 @@
                     <li class="page-item {% if page_obj.number == page_number %}active{% endif %}">
                         <a
                             class="page-link"
-                            href="?q={{ query|urlencode }}&category={{ category|urlencode }}&sort={{ sort|urlencode }}&page={{ page_number }}"
+                            href="?q={{ query|urlencode }}&category={{ category|urlencode }}&date_from={{ date_from|urlencode }}&date_to={{ date_to|urlencode }}&sort={{ sort|urlencode }}&page={{ page_number }}"
                         >
                             {{ page_number }}
                         </a>
@@ -116,7 +124,7 @@
                     <li class="page-item">
                         <a
                             class="page-link"
-                            href="?q={{ query|urlencode }}&category={{ category|urlencode }}&sort={{ sort|urlencode }}&page={{ page_obj.next_page_number }}"
+                            href="?q={{ query|urlencode }}&category={{ category|urlencode }}&date_from={{ date_from|urlencode }}&date_to={{ date_to|urlencode }}&sort={{ sort|urlencode }}&page={{ page_obj.next_page_number }}"
                             aria-label="Следующая"
                         >
                             <i class="bi bi-chevron-right"></i>
