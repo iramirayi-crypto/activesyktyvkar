@@ -151,6 +151,11 @@ urlpatterns = [
         name="admin_dashboard"
     ),
     path(
+        "admin-dashboard/backup/",
+        views.create_database_backup,
+        name="create_database_backup"
+    ),
+    path(
         "audit-log/",
         views.audit_log,
         name="audit_log"

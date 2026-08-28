@@ -1,7 +1,14 @@
+from contextlib import closing
 from datetime import datetime, timedelta
 import logging
+import os
+from pathlib import Path
+import shutil
+import sqlite3
 from smtplib import SMTPException
+import subprocess
 
+from django.conf import settings
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth import login, logout
@@ -10,9 +17,9 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib.auth.views import PasswordChangeView
 from django.core.mail import send_mail
-from django.core.exceptions import NON_FIELD_ERRORS
+from django.core.exceptions import NON_FIELD_ERRORS, PermissionDenied
 from django.contrib.messages.views import SuccessMessageMixin
-from django.db import transaction
+from django.db import DatabaseError, transaction
 from django.db.models import Count
 from django.db.models.functions import TruncDate
 from django.utils import timezone
@@ -32,6 +39,7 @@ from .forms import (
 from .models import AuditLog, Notification, Profile
 from .services import (
     EmailDeliveryError,
+    audit_action,
     clear_email_verification,
     issue_email_verification,
     soft_delete_user,
@@ -590,6 +598,117 @@ def admin_dashboard(request):
             "users_chart_data": users_chart_data,
         }
     )
+
+
+@login_required
+@require_POST
+def create_database_backup(request):
+    if not request.user.is_superuser:
+        raise PermissionDenied
+
+    database_settings = settings.DATABASES["default"]
+    database_engine = database_settings.get("ENGINE", "")
+    backup_directory = Path(settings.BASE_DIR) / "backups"
+    timestamp = timezone.localtime().strftime("%Y-%m-%d_%H%M%S")
+
+    if database_engine == "django.db.backends.sqlite3":
+        database_name = database_settings.get("NAME")
+        if not database_name or str(database_name) == ":memory:":
+            messages.error(request, "Не удалось определить файл SQLite-базы данных.")
+            return redirect("admin_dashboard")
+
+        source_path = Path(database_name).expanduser().resolve()
+        if not source_path.is_file():
+            messages.error(request, "Файл SQLite-базы данных не найден.")
+            return redirect("admin_dashboard")
+
+        backup_name = f"backup_{timestamp}.sqlite3"
+        database_label = "SQLite"
+    elif database_engine.startswith("django.db.backends.postgresql"):
+        database_name = database_settings.get("NAME")
+        if not database_name:
+            messages.error(request, "Не удалось определить PostgreSQL-базу данных.")
+            return redirect("admin_dashboard")
+
+        pg_dump_path = shutil.which("pg_dump")
+        if not pg_dump_path:
+            messages.error(request, "Утилита pg_dump не найдена.")
+            return redirect("admin_dashboard")
+
+        backup_name = f"backup_{timestamp}.dump"
+        database_label = "PostgreSQL"
+    else:
+        messages.error(request, "Резервное копирование этой СУБД не поддерживается.")
+        return redirect("admin_dashboard")
+
+    backup_path = backup_directory / backup_name
+
+    try:
+        backup_directory.mkdir(parents=True, exist_ok=True)
+        if backup_path.exists():
+            raise FileExistsError("Backup with this timestamp already exists")
+
+        if database_engine == "django.db.backends.sqlite3":
+            with closing(
+                sqlite3.connect(f"{source_path.as_uri()}?mode=ro", uri=True)
+            ) as source_connection, closing(
+                sqlite3.connect(backup_path)
+            ) as backup_connection:
+                source_connection.backup(backup_connection)
+        else:
+            command = [
+                pg_dump_path,
+                "--format=custom",
+                "--file",
+                str(backup_path),
+            ]
+            if database_settings.get("HOST"):
+                command.extend(["--host", str(database_settings["HOST"])])
+            if database_settings.get("PORT"):
+                command.extend(["--port", str(database_settings["PORT"])])
+            if database_settings.get("USER"):
+                command.extend(["--username", str(database_settings["USER"])])
+            command.extend(["--dbname", str(database_name)])
+
+            process_environment = os.environ.copy()
+            password = database_settings.get("PASSWORD")
+            if password:
+                process_environment["PGPASSWORD"] = str(password)
+            else:
+                process_environment.pop("PGPASSWORD", None)
+
+            subprocess.run(
+                command,
+                check=True,
+                env=process_environment,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.PIPE,
+                text=True,
+            )
+
+        if not backup_path.is_file() or backup_path.stat().st_size == 0:
+            raise OSError("Backup file is missing or empty")
+
+        audit_action(
+            actor=request.user,
+            action=f"Создана резервная копия {database_label}: {backup_name}",
+            request=request,
+        )
+    except (OSError, sqlite3.Error, DatabaseError, subprocess.CalledProcessError):
+        if backup_path.exists():
+            backup_path.unlink(missing_ok=True)
+        logger.exception("Не удалось создать резервную копию базы данных.")
+        messages.error(
+            request,
+            "Не удалось создать резервную копию. Попробуйте ещё раз позже.",
+        )
+    else:
+        messages.success(
+            request,
+            f"Резервная копия создана: {backup_name}",
+        )
+
+    return redirect("admin_dashboard")
 
 
 # Журнал аудита

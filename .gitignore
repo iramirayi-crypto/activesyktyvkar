@@ -4,6 +4,7 @@ __pycache__/
 .env
 media/
 staticfiles/
+backups/
 .idea/
 .vscode/
 .DS_Store
