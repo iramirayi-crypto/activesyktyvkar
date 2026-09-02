@@ -300,9 +300,13 @@ def hidden_initiatives(request):
 @login_required
 def create_initiative(request):
     if request.method == "POST":
-        form = InitiativeForm(request.POST, request.FILES)
+        action = request.POST.get("action", "moderation")
+        form = InitiativeForm(
+            request.POST,
+            request.FILES,
+            is_draft=action == "draft",
+        )
         if form.is_valid():
-            action = request.POST.get("action", "moderation")
             status = "draft" if action == "draft" else "moderation"
             initiative = form.save(commit=False)
             initiative.author = request.user

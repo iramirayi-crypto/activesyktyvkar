@@ -89,9 +89,10 @@ class InitiativeForm(forms.ModelForm):
             ),
         }
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, is_draft=False, **kwargs):
+        self.is_draft = is_draft
         super().__init__(*args, **kwargs)
-        self.fields["location"].required = True
+        self.fields["location"].required = not self.is_draft
 
     def clean_title(self):
         return self.cleaned_data["title"].strip()
@@ -106,7 +107,7 @@ class InitiativeForm(forms.ModelForm):
         cleaned_data = super().clean()
         latitude = str(self.data.get("latitude") or "").strip()
         longitude = str(self.data.get("longitude") or "").strip()
-        if not latitude or not longitude:
+        if not self.is_draft and (not latitude or not longitude):
             self.add_error(
                 "latitude",
                 "Отметьте место реализации на карте.",
