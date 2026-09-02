@@ -5,12 +5,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.querySelectorAll("form.needs-validation").forEach((form) => {
         form.addEventListener("submit", (event) => {
-            if (!form.checkValidity()) {
+            const skipValidation = event.submitter?.formNoValidate;
+            if (!skipValidation && !form.checkValidity()) {
                 event.preventDefault();
                 event.stopPropagation();
                 form.querySelector(":invalid")?.focus();
             }
-            form.classList.add("was-validated");
+            if (!skipValidation) {
+                form.classList.add("was-validated");
+            }
         });
     });
 

@@ -92,7 +92,8 @@ class InitiativeForm(forms.ModelForm):
     def __init__(self, *args, is_draft=False, **kwargs):
         self.is_draft = is_draft
         super().__init__(*args, **kwargs)
-        self.fields["location"].required = not self.is_draft
+        for field_name in ("category", "description", "location"):
+            self.fields[field_name].required = not self.is_draft
 
     def clean_title(self):
         return self.cleaned_data["title"].strip()

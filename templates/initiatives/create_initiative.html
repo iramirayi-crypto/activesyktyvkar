@@ -43,7 +43,7 @@
             </div>
             <div class="card-actions justify-content-end">
                 <a href="{% url 'my_initiatives' %}" class="btn btn-outline-secondary">Отмена</a>
-                <button type="submit" name="action" value="draft" class="btn btn-outline-primary">
+                <button type="submit" name="action" value="draft" class="btn btn-outline-primary" formnovalidate>
                     <i class="bi bi-save"></i>Сохранить как черновик
                 </button>
                 <button type="submit" name="action" value="moderation" class="btn btn-primary">
